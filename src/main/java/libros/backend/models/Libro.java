@@ -28,6 +28,10 @@ public class Libro {
     @NonNull
     private String autor;
 
+    @NonNull
+    @Column(unique=true)
+    private String ISBN;
+
     private LocalDate fecha_publicacion;
     
     private LocalDate fecha_prestamo;
