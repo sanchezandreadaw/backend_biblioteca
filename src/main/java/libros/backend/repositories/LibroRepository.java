@@ -7,5 +7,7 @@ import libros.backend.models.Libro;
 
 @Repository
 public interface LibroRepository extends JpaRepository<Libro,Long>{
+    public Libro findByISBN(String ISBN);
+
     
 }
