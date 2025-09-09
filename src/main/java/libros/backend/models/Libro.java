@@ -29,11 +29,11 @@ public class Libro {
     private String autor;
 
     @NonNull
-    @Column(unique=true)
+    @Column(unique = true)
     private String ISBN;
 
     private LocalDate fecha_publicacion;
-    
+
     private LocalDate fecha_prestamo;
 
     private LocalDate fecha_devolucion;
@@ -41,10 +41,10 @@ public class Libro {
     @NonNull
     @Enumerated(EnumType.STRING)
     @Column(columnDefinition = "VARCHAR(255)")
-    private EstadoLibro estadoLibro;
+    private EstadoLibro estado_libro;
 
     @ManyToOne
     @NonNull
     private User usuario;
-        
+
 }

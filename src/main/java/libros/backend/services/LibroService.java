@@ -9,7 +9,6 @@ import org.springframework.stereotype.Service;
 import libros.backend.helpers.LibroHelper;
 import libros.backend.models.EstadoLibro;
 import libros.backend.models.Libro;
-import libros.backend.models.User;
 import libros.backend.repositories.LibroRepository;
 
 @Service
@@ -20,11 +19,11 @@ public class LibroService {
 
     public void saveLibro(String titulo, String autor, String ISBN, LocalDate fecha_publicacion,
             LocalDate fecha_prestamo, LocalDate fecha_devolucion, EstadoLibro estadoLibro,
-            User usuario) {
-        
+            Long usuario) {
+
         boolean NoExisteISBN = !findByISBN(ISBN).getISBN().equalsIgnoreCase(ISBN);
 
-        if (LibroHelper.EsUnLibroValido(titulo, autor, ISBN, fecha_publicacion) && NoExisteISBN ){
+        if (LibroHelper.EsUnLibroValido(titulo, autor, ISBN, fecha_publicacion) && NoExisteISBN) {
             Libro libro = new Libro();
             libro.setTitulo(titulo);
             libro.setAutor(autor);
@@ -32,9 +31,10 @@ public class LibroService {
             libro.setFecha_publicacion(fecha_publicacion);
             libro.setFecha_prestamo(fecha_prestamo);
             libro.setFecha_devolucion(fecha_devolucion);
-            libro.setEstadoLibro(estadoLibro);
+            libro.setEstado_libro(estadoLibro);
             libroRepository.save(libro);
         }
+
     }
 
     public List<Libro> findAll() {
@@ -55,21 +55,21 @@ public class LibroService {
     }
 
     public void updateLibro(String titulo, String autor, String ISBN, LocalDate fecha_publicacion,
-                LocalDate fecha_prestamo, LocalDate fecha_devolucion, EstadoLibro estadoLibro) {
+            LocalDate fecha_prestamo, LocalDate fecha_devolucion, EstadoLibro estadoLibro) {
 
         Libro libro = libroRepository.findByISBN(ISBN);
-        if(libro != null) {
-           if(LibroHelper.EsUnLibroValido(titulo, autor, ISBN, fecha_publicacion)) {
+        if (libro != null) {
+            if (LibroHelper.EsUnLibroValido(titulo, autor, ISBN, fecha_publicacion)) {
                 libro.setTitulo(titulo);
                 libro.setAutor(autor);
                 libro.setISBN(ISBN);
                 libro.setFecha_publicacion(fecha_publicacion);
                 libro.setFecha_prestamo(fecha_prestamo);
                 libro.setFecha_devolucion(fecha_devolucion);
-                libro.setEstadoLibro(estadoLibro);
+                libro.setEstado_libro(estadoLibro);
                 libroRepository.save(libro);
-           }
-        }else{
+            }
+        } else {
             System.out.println("El libro que estás intentando actualizar no existe");
         }
 

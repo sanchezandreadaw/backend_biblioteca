@@ -45,7 +45,7 @@ public class UserHelper {
 	public static boolean verifyEmail(String correo, List<User> usuarios) {
 		boolean existeEmail = false;
 		for (User user : usuarios) {
-			if (user.getCorreo_electronico().equalsIgnoreCase(correo)) {
+			if (user.getCorreo().equalsIgnoreCase(correo)) {
 				System.out.println("El usuario con correo: " + correo + " ya existe.");
 				existeEmail = true;
 				break;

@@ -21,9 +21,9 @@ import lombok.Setter;
 @Getter
 @Setter
 public class User {
-    
+
     @Id
-    @GeneratedValue(strategy=GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @NonNull
@@ -42,19 +42,18 @@ public class User {
 
     @NonNull
     @Column(unique = true)
-    private String correo_electronico;
+    private String correo;
 
     @NonNull
     @Enumerated(EnumType.STRING)
     @Column(columnDefinition = "VARCHAR(255)")
-    private EstadoUsuario estadoUsuario;
+    private EstadoUsuario estado_usuario;
 
-    @OneToMany(mappedBy="usuario", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "usuario", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<Libro> libros;
 
     public User() {
         this.libros = new ArrayList<>();
     }
-
 
 }
