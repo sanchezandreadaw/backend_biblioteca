@@ -7,5 +7,7 @@ import libros.backend.models.User;
 
 @Repository
 public interface UserRepository extends JpaRepository<User, Long> {
+    public User findByDNI(String DNI);
+    public User findByCorreo(String correo);
 
 }

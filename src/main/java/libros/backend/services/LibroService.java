@@ -21,8 +21,10 @@ public class LibroService {
     public void saveLibro(String titulo, String autor, String ISBN, LocalDate fecha_publicacion,
             LocalDate fecha_prestamo, LocalDate fecha_devolucion, EstadoLibro estadoLibro,
             User usuario) {
+        
+        boolean NoExisteISBN = !findByISBN(ISBN).getISBN().equalsIgnoreCase(ISBN);
 
-        if (LibroHelper.EsUnLibroValido(titulo, autor, ISBN, fecha_publicacion)) {
+        if (LibroHelper.EsUnLibroValido(titulo, autor, ISBN, fecha_publicacion) && NoExisteISBN ){
             Libro libro = new Libro();
             libro.setTitulo(titulo);
             libro.setAutor(autor);

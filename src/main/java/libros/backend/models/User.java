@@ -38,6 +38,10 @@ public class User {
 
     @NonNull
     @Column(unique = true)
+    private String telefono;
+
+    @NonNull
+    @Column(unique = true)
     private String correo_electronico;
 
     @NonNull
