@@ -21,9 +21,9 @@ public class UserService {
             EstadoUsuario estado_usuario, List<Libro> libros) {
 
         if (UserHelper.isValidUser(nombre, apellidos, DNI, telefono, correo)
-                && !UserHelper.verifyDNI(DNI, userRepository.findAll())
-                && !UserHelper.verifyEmail(correo, userRepository.findAll())
-                && !UserHelper.verifyPhone(telefono, userRepository.findAll())) {
+                && !UserHelper.verifyDNI(DNI, userRepository.findAll(), "no")
+                && !UserHelper.verifyEmail(correo, userRepository.findAll(), "no")
+                && !UserHelper.verifyPhone(telefono, userRepository.findAll(), "no")) {
 
             User user = new User();
             user.setNombre(nombre);
@@ -62,9 +62,9 @@ public class UserService {
                 .orElseThrow(() -> new Exception("El usuario con ID " + id + " no existe"));
 
         if (!UserHelper.isValidUser(nombre, apellidos, DNI, telefono, correo) ||
-                UserHelper.verifyDNI(DNI, userRepository.findAll()) ||
-                UserHelper.verifyPhone(telefono, userRepository.findAll()) ||
-                UserHelper.verifyEmail(correo, userRepository.findAll())) {
+                UserHelper.verifyDNI(DNI, userRepository.findAll(), "yes") ||
+                UserHelper.verifyPhone(telefono, userRepository.findAll(), "yes") ||
+                UserHelper.verifyEmail(correo, userRepository.findAll(), "yes")) {
             throw new Exception("Los valores introducidos no son correctos");
         }
 

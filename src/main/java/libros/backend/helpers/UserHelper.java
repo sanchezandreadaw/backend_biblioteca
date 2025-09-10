@@ -32,35 +32,41 @@ public class UserHelper {
 		return true;
 	}
 
-	public static boolean verifyDNI(String DNI, List<User> usuarios) {
-
+	public static boolean verifyDNI(String DNI, List<User> usuarios, String updating) {
 		for (User user : usuarios) {
 			if (user.getDNI().equalsIgnoreCase(DNI)) {
-				System.out.println("El usuario con DNI " + DNI + " ya existe.");
+				if (updating.equalsIgnoreCase("yes")) {
+					continue;
+				}
+				System.out.println("El usuario con DNI: " + DNI + " ya existe");
 				return true;
-
 			}
 		}
 		return false;
-
 	}
 
-	public static boolean verifyEmail(String correo, List<User> usuarios) {
+	public static boolean verifyEmail(String correo, List<User> usuarios, String updating) {
 
 		for (User user : usuarios) {
 			if (user.getCorreo().equalsIgnoreCase(correo)) {
-				System.out.println("El usuario con correo: " + correo + " ya existe.");
-				return true;
+				if (updating.equalsIgnoreCase("yes")) {
 
+					continue;
+				}
+				System.out.println("El usuario con correo: " + correo + " ya existe");
+				return true;
 			}
 		}
 		return false;
 	}
 
-	public static boolean verifyPhone(String number, List<User> usuarios) {
+	public static boolean verifyPhone(String number, List<User> usuarios, String updating) {
 
 		for (User user : usuarios) {
 			if (user.getTelefono().equalsIgnoreCase(number)) {
+				if (updating.equalsIgnoreCase("yes")) {
+					continue;
+				}
 				System.out.println("El número de teléfono " + number + " ya está registado");
 				return true;
 			}
@@ -74,7 +80,7 @@ public class UserHelper {
 		sb.append("Apellidos: " + user.getApellidos() + "\n");
 		sb.append("DNI: " + user.getDNI() + "\n");
 		sb.append("Teléfono: " + user.getTelefono() + "\n");
-		sb.append("Correo: " + user.getTelefono() + "\n");
+		sb.append("Correo: " + user.getCorreo() + "\n");
 		sb.append("Estado: " + user.getEstado_usuario() + "\n");
 		if (user.getLibros() != null) {
 			for (Libro libro : user.getLibros()) {
