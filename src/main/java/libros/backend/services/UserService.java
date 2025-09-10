@@ -1,6 +1,7 @@
 package libros.backend.services;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -51,24 +52,36 @@ public class UserService {
         return userRepository.findByDNI(DNI);
     }
 
-    public void update(String nombre, String apellidos, String DNI, String telefono, String correo,
-            EstadoUsuario estadoUsuario) {
+    public User findById(Long id) {
+        return userRepository.findById(id).get();
+    }
 
-        User usuario = userRepository.findByDNI(DNI);
+    public void update(String nombre, String apellidos, String DNI, String correo, String telefono,
+            EstadoUsuario estadoUsuario, List<Libro> libros, Long id) {
 
+        Optional<User> usuario = userRepository.findById(id);
         if (usuario != null) {
-            if (UserHelper.isValidUser(nombre, apellidos, DNI, telefono, correo)) {
-                usuario.setNombre(nombre);
-                usuario.setApellidos(apellidos);
-                usuario.setDNI(DNI);
-                usuario.setTelefono(telefono);
-                usuario.setCorreo(correo);
-                usuario.setEstado_usuario(estadoUsuario);
+            User user_exist = usuario.get();
+            if (UserHelper.isValidUser(nombre, apellidos, DNI, telefono, correo)
+                    && !UserHelper.verifyDNI(DNI, userRepository.findAll())
+                    && !UserHelper.verifyPhone(telefono, userRepository.findAll())
+                    && !UserHelper.verifyEmail(correo, userRepository.findAll())) {
+                user_exist.setNombre(nombre);
+                user_exist.setApellidos(apellidos);
+                user_exist.setDNI(DNI);
+                user_exist.setCorreo(correo);
+                user_exist.setTelefono(telefono);
+                user_exist.setEstado_usuario(estadoUsuario);
 
-                userRepository.save(usuario);
+                if (libros != null) {
+                    user_exist.setLibros(libros);
+                }
+                userRepository.save(user_exist);
+            } else {
+                System.out.println("No se ha podido actualizar el usuario.");
             }
         } else {
-            System.out.println("El usuario con DNI: " + DNI + " ya existe.");
+            System.out.println("El usuario con ID: " + id + " no existe en la BBDD.");
         }
 
     }
