@@ -20,15 +20,26 @@ public class UserService {
     public void save(String nombre, String apellidos, String DNI, String telefono, String correo,
             EstadoUsuario estado_usuario, List<Libro> libros) {
 
-        User user = new User();
-        user.setNombre(nombre);
-        user.setApellidos(apellidos);
-        user.setDNI(DNI);
-        user.setCorreo(correo);
-        user.setTelefono(telefono);
-        user.setEstado_usuario(estado_usuario);
-        user.setLibros(libros);
-        userRepository.save(user);
+        if (UserHelper.isValidUser(nombre, apellidos, DNI, telefono, correo)
+                && !UserHelper.verifyDNI(DNI, userRepository.findAll())
+                && !UserHelper.verifyEmail(correo, userRepository.findAll())
+                && !UserHelper.verifyPhone(telefono, userRepository.findAll())) {
+
+            User user = new User();
+            user.setNombre(nombre);
+            user.setApellidos(apellidos);
+            user.setDNI(DNI);
+            user.setCorreo(correo);
+            user.setTelefono(telefono);
+            user.setEstado_usuario(estado_usuario);
+            user.setLibros(libros);
+            userRepository.save(user);
+            System.out.println("Datos del usuario: ");
+            System.out.println(UserHelper.showUser(user));
+
+        } else {
+            System.out.println("Error al guardar el usuario.");
+        }
 
     }
 
