@@ -54,19 +54,16 @@ public class UserRestController {
             @RequestParam("estado_usuario") EstadoUsuario estado_usuario,
             @RequestParam(value = "libros", required = false) List<Libro> libros,
             @RequestParam("id") Long id) {
-
         try {
-            userService.update(nombre, apellidos, DNI, correo, telefono, estado_usuario, libros, id);
-            User user = userService.findById(id);
-
+            User updated = userService.update(nombre, apellidos, DNI, correo, telefono, estado_usuario, libros, id);
             return ResponseEntity
                     .status(HttpStatus.ACCEPTED)
-                    .body("Usuario actualizado correctamente: " + UserHelper.showUser(user));
-        } catch (Exception exception) {
-            System.out.println("Se ha producido un error al actualizar el usuario: " + exception.getMessage());
-            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+                    .body("Usuario actualizado correctamente: " + UserHelper.showUser(updated));
+        } catch (Exception e) {
+            return ResponseEntity
+                    .status(HttpStatus.BAD_REQUEST)
+                    .body("Error al actualizar el usuario: " + e.getMessage());
         }
-
     }
 
 }

@@ -1,7 +1,6 @@
 package libros.backend.services;
 
 import java.util.List;
-import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -56,34 +55,29 @@ public class UserService {
         return userRepository.findById(id).get();
     }
 
-    public void update(String nombre, String apellidos, String DNI, String correo, String telefono,
-            EstadoUsuario estadoUsuario, List<Libro> libros, Long id) {
+    public User update(String nombre, String apellidos, String DNI, String correo, String telefono,
+            EstadoUsuario estadoUsuario, List<Libro> libros, Long id) throws Exception {
 
-        Optional<User> usuario = userRepository.findById(id);
-        if (usuario != null) {
-            User user_exist = usuario.get();
-            if (UserHelper.isValidUser(nombre, apellidos, DNI, telefono, correo)
-                    && !UserHelper.verifyDNI(DNI, userRepository.findAll())
-                    && !UserHelper.verifyPhone(telefono, userRepository.findAll())
-                    && !UserHelper.verifyEmail(correo, userRepository.findAll())) {
-                user_exist.setNombre(nombre);
-                user_exist.setApellidos(apellidos);
-                user_exist.setDNI(DNI);
-                user_exist.setCorreo(correo);
-                user_exist.setTelefono(telefono);
-                user_exist.setEstado_usuario(estadoUsuario);
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new Exception("El usuario con ID " + id + " no existe"));
 
-                if (libros != null) {
-                    user_exist.setLibros(libros);
-                }
-                userRepository.save(user_exist);
-            } else {
-                System.out.println("No se ha podido actualizar el usuario.");
-            }
-        } else {
-            System.out.println("El usuario con ID: " + id + " no existe en la BBDD.");
+        if (!UserHelper.isValidUser(nombre, apellidos, DNI, telefono, correo) ||
+                UserHelper.verifyDNI(DNI, userRepository.findAll()) ||
+                UserHelper.verifyPhone(telefono, userRepository.findAll()) ||
+                UserHelper.verifyEmail(correo, userRepository.findAll())) {
+            throw new Exception("Los valores introducidos no son correctos");
         }
 
+        user.setNombre(nombre);
+        user.setApellidos(apellidos);
+        user.setDNI(DNI);
+        user.setCorreo(correo);
+        user.setTelefono(telefono);
+        user.setEstado_usuario(estadoUsuario);
+        if (libros != null) {
+            user.setLibros(libros);
+        }
+        return userRepository.save(user);
     }
 
 }
