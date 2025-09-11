@@ -7,6 +7,7 @@ import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -30,12 +31,12 @@ public class LibroRestController {
             @RequestParam(value = "fecha_max_devolucion", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fecha_max_devolucion,
             @RequestParam(value = "fecha_devolucion", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fecha_devolucion,
             @RequestParam("estado_libro") EstadoLibro estadoLibro,
-            @RequestParam(value = "usuario", required = false) Long usuario) {
+            @RequestParam(value = "id_usuario", required = false) Long id_usuario) {
 
         try {
             libroService.saveLibro(titulo, autor, ISBN, fecha_publicacion, fecha_prestamo, fecha_max_devolucion,
                     fecha_devolucion,
-                    estadoLibro, usuario);
+                    estadoLibro, id_usuario);
             return new ResponseEntity<>(HttpStatus.ACCEPTED);
         } catch (Exception exception) {
             System.out.println("Se ha producido un error al guardar el libro: " + exception.getMessage());
@@ -44,4 +45,25 @@ public class LibroRestController {
 
     }
 
+    @PutMapping("/update_libro")
+    public ResponseEntity<Libro> update(@RequestParam("titulo") String titulo, @RequestParam("autor") String autor,
+            @RequestParam("ISBN") String ISBN,
+            @RequestParam("fecha_publicacion") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fecha_publicacion,
+            @RequestParam(value = "fecha_prestamo", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fecha_prestamo,
+            @RequestParam(value = "fecha_max_devolucion", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fecha_max_devolucion,
+            @RequestParam(value = "fecha_devolucion", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fecha_devolucion,
+            @RequestParam("estado_libro") EstadoLibro estadoLibro,
+            @RequestParam(value = "id_usuario", required = false) Long id_usuario) {
+
+        try {
+            libroService.updateLibro(titulo, autor, ISBN, fecha_publicacion, fecha_prestamo, fecha_max_devolucion,
+                    fecha_devolucion,
+                    estadoLibro, id_usuario);
+            return new ResponseEntity<>(HttpStatus.ACCEPTED);
+        } catch (Exception exception) {
+            System.out.println("Se ha producido un error al actualizar el libro: " + exception.getMessage());
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        }
+
+    }
 }

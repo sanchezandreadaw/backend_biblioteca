@@ -46,7 +46,6 @@ public class Libro {
     private EstadoLibro estado_libro;
 
     @ManyToOne
-    @NonNull
     private User usuario;
 
 }
