@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 import libros.backend.helpers.UserHelper;
 import libros.backend.models.EstadoUsuario;
 import libros.backend.models.Libro;
+import libros.backend.models.TipoUsuario;
 import libros.backend.models.User;
 import libros.backend.repositories.UserRepository;
 
@@ -18,7 +19,7 @@ public class UserService {
     private UserRepository userRepository;
 
     public void save(String nombre, String apellidos, String DNI, String telefono, String correo,
-            EstadoUsuario estado_usuario, List<Libro> libros) {
+            EstadoUsuario estado_usuario, TipoUsuario tipoUsuario, List<Libro> libros) throws Exception {
 
         if (UserHelper.isValidUser(nombre, apellidos, DNI, telefono, correo)
                 && !UserHelper.verifyDNI(DNI, userRepository.findAll(), "no")
@@ -32,6 +33,7 @@ public class UserService {
             user.setCorreo(correo);
             user.setTelefono(telefono);
             user.setEstado_usuario(estado_usuario);
+            user.setTipoUsuario(tipoUsuario);
             user.setLibros(libros);
             userRepository.save(user);
             System.out.println("Datos del usuario: ");
@@ -39,6 +41,7 @@ public class UserService {
 
         } else {
             System.out.println("Error al guardar el usuario.");
+            throw new Exception("Error al guardar el usuario. Los datos no son válidos.");
         }
 
     }
@@ -62,7 +65,7 @@ public class UserService {
     }
 
     public User update(String nombre, String apellidos, String DNI, String correo, String telefono,
-            EstadoUsuario estadoUsuario, List<Libro> libros, Long id) throws Exception {
+            EstadoUsuario estadoUsuario, TipoUsuario tipoUsuario, List<Libro> libros, Long id) throws Exception {
 
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new Exception("El usuario con ID " + id + " no existe"));
@@ -80,9 +83,9 @@ public class UserService {
         user.setCorreo(correo);
         user.setTelefono(telefono);
         user.setEstado_usuario(estadoUsuario);
-        if (libros != null) {
-            user.setLibros(libros);
-        }
+        user.setTipoUsuario(tipoUsuario);
+        user.setLibros(libros);
+
         return userRepository.save(user);
     }
 

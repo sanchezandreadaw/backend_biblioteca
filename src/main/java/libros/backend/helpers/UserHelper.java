@@ -82,6 +82,7 @@ public class UserHelper {
 		sb.append("Teléfono: " + user.getTelefono() + "\n");
 		sb.append("Correo: " + user.getCorreo() + "\n");
 		sb.append("Estado: " + user.getEstado_usuario() + "\n");
+		sb.append("Tipo de usuario: " + user.getTipoUsuario() + "\n");
 		if (user.getLibros() != null) {
 			for (Libro libro : user.getLibros()) {
 				sb.append("Título: " + libro.getTitulo() + "\n");

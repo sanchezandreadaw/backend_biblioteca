@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.RestController;
 import libros.backend.helpers.UserHelper;
 import libros.backend.models.EstadoUsuario;
 import libros.backend.models.Libro;
+import libros.backend.models.TipoUsuario;
 import libros.backend.models.User;
 import libros.backend.services.UserService;
 
@@ -31,17 +32,18 @@ public class UserRestController {
             @RequestParam("apellidos") String apellidos,
             @RequestParam("DNI") String DNI, @RequestParam("telefono") String telefono,
             @RequestParam("correo") String correo, @RequestParam("estado_usuario") EstadoUsuario estadoUsuario,
+            @RequestParam("tipo_usuario") TipoUsuario tipoUsuario,
             @RequestParam(value = "libros", required = false) List<Libro> libros) {
 
         try {
-            userService.save(nombre, apellidos, DNI, telefono, correo, estadoUsuario, libros);
+            userService.save(nombre, apellidos, DNI, telefono, correo, estadoUsuario, tipoUsuario, libros);
             return ResponseEntity
                     .status(HttpStatus.ACCEPTED)
                     .body("Usuario guardado correctamente");
         } catch (Exception exception) {
             System.out.println("Se ha producido un error al guardar el usuario: " + exception.getMessage());
             return ResponseEntity
-                    .status(HttpStatus.ACCEPTED)
+                    .status(HttpStatus.BAD_REQUEST)
                     .body("Se ha producido un error al guardar el usuario: " + exception.getMessage());
         }
 
@@ -54,10 +56,12 @@ public class UserRestController {
             @RequestParam("correo") String correo,
             @RequestParam("telefono") String telefono,
             @RequestParam("estado_usuario") EstadoUsuario estado_usuario,
+            @RequestParam("tipo_usuario") TipoUsuario tipo_usuario,
             @RequestParam(value = "libros", required = false) List<Libro> libros,
             @RequestParam("id") Long id) {
         try {
-            User updated = userService.update(nombre, apellidos, DNI, correo, telefono, estado_usuario, libros, id);
+            User updated = userService.update(nombre, apellidos, DNI, correo, telefono, estado_usuario,
+                    tipo_usuario, libros, id);
             return ResponseEntity
                     .status(HttpStatus.ACCEPTED)
                     .body("Usuario actualizado correctamente: " + UserHelper.showUser(updated));

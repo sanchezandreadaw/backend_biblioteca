@@ -49,6 +49,11 @@ public class User {
     @Column(columnDefinition = "VARCHAR(255)")
     private EstadoUsuario estado_usuario;
 
+    @NonNull
+    @Enumerated(EnumType.STRING)
+    @Column(columnDefinition = "VARCHAR(255)")
+    private TipoUsuario tipoUsuario;
+
     @OneToMany(mappedBy = "usuario", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<Libro> libros;
 
