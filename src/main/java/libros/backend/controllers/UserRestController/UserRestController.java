@@ -1,8 +1,10 @@
 package libros.backend.controllers.UserRestController;
 
+import java.time.LocalDate;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -33,10 +35,12 @@ public class UserRestController {
             @RequestParam("DNI") String DNI, @RequestParam("telefono") String telefono,
             @RequestParam("correo") String correo, @RequestParam("estado_usuario") EstadoUsuario estadoUsuario,
             @RequestParam("tipo_usuario") TipoUsuario tipoUsuario,
+            @RequestParam(value = "fecha_fin_penalizacion", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fecha_fin_penalizacion,
             @RequestParam(value = "libros", required = false) List<Libro> libros) {
 
         try {
-            userService.save(nombre, apellidos, DNI, telefono, correo, estadoUsuario, tipoUsuario, libros);
+            userService.save(nombre, apellidos, DNI, telefono, correo, estadoUsuario, tipoUsuario,
+                    fecha_fin_penalizacion, libros);
             return ResponseEntity
                     .status(HttpStatus.ACCEPTED)
                     .body("Usuario guardado correctamente");
@@ -57,11 +61,12 @@ public class UserRestController {
             @RequestParam("telefono") String telefono,
             @RequestParam("estado_usuario") EstadoUsuario estado_usuario,
             @RequestParam("tipo_usuario") TipoUsuario tipo_usuario,
+            @RequestParam(value = "fecha_fin_penalizacion", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fecha_fin_penalizacion,
             @RequestParam(value = "libros", required = false) List<Libro> libros,
             @RequestParam("id") Long id) {
         try {
             User updated = userService.update(nombre, apellidos, DNI, correo, telefono, estado_usuario,
-                    tipo_usuario, libros, id);
+                    tipo_usuario, fecha_fin_penalizacion, libros, id);
             return ResponseEntity
                     .status(HttpStatus.ACCEPTED)
                     .body("Usuario actualizado correctamente: " + UserHelper.showUser(updated));

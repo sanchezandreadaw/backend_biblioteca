@@ -1,5 +1,6 @@
 package libros.backend.models;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -53,6 +54,8 @@ public class User {
     @Enumerated(EnumType.STRING)
     @Column(columnDefinition = "VARCHAR(255)")
     private TipoUsuario tipoUsuario;
+
+    private LocalDate fecha_fin_penalizacion;
 
     @OneToMany(mappedBy = "usuario", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<Libro> libros;

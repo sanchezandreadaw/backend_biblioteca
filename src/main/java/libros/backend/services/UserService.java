@@ -1,15 +1,19 @@
 package libros.backend.services;
 
+import java.time.LocalDate;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import libros.backend.helpers.FechaFormat;
 import libros.backend.helpers.UserHelper;
+import libros.backend.models.EstadoLibro;
 import libros.backend.models.EstadoUsuario;
 import libros.backend.models.Libro;
 import libros.backend.models.TipoUsuario;
 import libros.backend.models.User;
+import libros.backend.repositories.LibroRepository;
 import libros.backend.repositories.UserRepository;
 
 @Service
@@ -18,8 +22,12 @@ public class UserService {
     @Autowired
     private UserRepository userRepository;
 
+    @Autowired
+    private LibroRepository libroRepository;
+
     public void save(String nombre, String apellidos, String DNI, String telefono, String correo,
-            EstadoUsuario estado_usuario, TipoUsuario tipoUsuario, List<Libro> libros) throws Exception {
+            EstadoUsuario estado_usuario, TipoUsuario tipoUsuario, LocalDate fecha_fin_penalizacion,
+            List<Libro> libros) throws Exception {
 
         if (UserHelper.isValidUser(nombre, apellidos, DNI, telefono, correo)
                 && !UserHelper.verifyDNI(DNI, userRepository.findAll(), "no")
@@ -34,6 +42,7 @@ public class UserService {
             user.setTelefono(telefono);
             user.setEstado_usuario(estado_usuario);
             user.setTipoUsuario(tipoUsuario);
+            user.setFecha_fin_penalizacion(fecha_fin_penalizacion);
             user.setLibros(libros);
             userRepository.save(user);
             System.out.println("Datos del usuario: ");
@@ -65,7 +74,8 @@ public class UserService {
     }
 
     public User update(String nombre, String apellidos, String DNI, String correo, String telefono,
-            EstadoUsuario estadoUsuario, TipoUsuario tipoUsuario, List<Libro> libros, Long id) throws Exception {
+            EstadoUsuario estadoUsuario, TipoUsuario tipoUsuario, LocalDate fecha_fin_penalizacion,
+            List<Libro> libros, Long id) throws Exception {
 
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new Exception("El usuario con ID " + id + " no existe"));
@@ -84,6 +94,7 @@ public class UserService {
         user.setTelefono(telefono);
         user.setEstado_usuario(estadoUsuario);
         user.setTipoUsuario(tipoUsuario);
+        user.setFecha_fin_penalizacion(fecha_fin_penalizacion);
         user.setLibros(libros);
 
         return userRepository.save(user);
@@ -96,6 +107,52 @@ public class UserService {
         userRepository.delete(usuario);
         return usuario;
 
+    }
+
+    public Libro pedirLibro(String titulo, String DNI) throws Exception {
+        User usuario = userRepository.findByDNI(DNI.toLowerCase());
+        Libro libro = libroRepository.findByTitulo(titulo.toLowerCase());
+
+        if (usuario.getEstado_usuario().equals(EstadoUsuario.PENALIZADO)) {
+            StringBuilder sb = new StringBuilder();
+            String fecha = usuario.getFecha_fin_penalizacion().format(FechaFormat.foramto_fecha);
+
+            sb.append("No puedes pedir ningún libro prestado debido a que has sido penalizado.");
+            sb.append("La penalización finalizará el: " + fecha);
+
+            throw new Exception(sb.toString());
+        }
+
+        if (libro.getEstado_libro().equals(EstadoLibro.PRESTADO)) {
+            throw new Exception("El libro: " + libro.getTitulo() + "ya ha sido prestado.");
+        }
+        LocalDate fechaPrestamo = LocalDate.now();
+        LocalDate maxFechaDevolucion = fechaPrestamo.plusDays(15);
+
+        libro.setFecha_prestamo(fechaPrestamo);
+        libro.setFecha_devolucion(maxFechaDevolucion);
+        libro.setEstado_libro(EstadoLibro.PRESTADO);
+        return libro;
+    }
+
+    public Libro devolverLibro(String titulo, String DNI) throws Exception {
+        User usuario = userRepository.findByDNI(DNI.toLowerCase());
+        Libro libro = libroRepository.findByTitulo(titulo.toLowerCase());
+        libro.setFecha_devolucion(LocalDate.now());
+
+        if (libro.getFecha_devolucion().isAfter(libro.getFecha_max_devolucion())) {
+            usuario.setEstado_usuario(EstadoUsuario.PENALIZADO);
+            usuario.setFecha_fin_penalizacion(LocalDate.now().plusDays(20));
+            String fecha = usuario.getFecha_fin_penalizacion().format(FechaFormat.foramto_fecha);
+
+            StringBuilder sb = new StringBuilder();
+            sb.append("Has superado el plazo máximo de devolución y serás penalizado/a" + "\n");
+            sb.append("La penalización finaliza en la fecha: " + fecha);
+
+            throw new Exception(sb.toString());
+
+        }
+        return libro;
     }
 
 }

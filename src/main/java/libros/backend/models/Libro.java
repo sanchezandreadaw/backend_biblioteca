@@ -36,6 +36,8 @@ public class Libro {
 
     private LocalDate fecha_prestamo;
 
+    private LocalDate fecha_max_devolucion;
+
     private LocalDate fecha_devolucion;
 
     @NonNull

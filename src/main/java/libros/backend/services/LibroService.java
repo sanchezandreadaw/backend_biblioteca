@@ -18,7 +18,8 @@ public class LibroService {
     private LibroRepository libroRepository;
 
     public void saveLibro(String titulo, String autor, String ISBN, LocalDate fecha_publicacion,
-            LocalDate fecha_prestamo, LocalDate fecha_devolucion, EstadoLibro estadoLibro,
+            LocalDate fecha_prestamo, LocalDate fecha_max_devolucion, LocalDate fecha_devolucion,
+            EstadoLibro estadoLibro,
             Long usuario) {
 
         boolean NoExisteISBN = !findByISBN(ISBN).getISBN().equalsIgnoreCase(ISBN);
@@ -30,6 +31,7 @@ public class LibroService {
             libro.setISBN(ISBN);
             libro.setFecha_publicacion(fecha_publicacion);
             libro.setFecha_prestamo(fecha_prestamo);
+            libro.setFecha_max_devolucion(fecha_max_devolucion);
             libro.setFecha_devolucion(fecha_devolucion);
             libro.setEstado_libro(estadoLibro);
             libroRepository.save(libro);
@@ -55,7 +57,8 @@ public class LibroService {
     }
 
     public void updateLibro(String titulo, String autor, String ISBN, LocalDate fecha_publicacion,
-            LocalDate fecha_prestamo, LocalDate fecha_devolucion, EstadoLibro estadoLibro) {
+            LocalDate fecha_prestamo, LocalDate fecha_max_devolucion, LocalDate fecha_devolucion,
+            EstadoLibro estadoLibro) {
 
         Libro libro = libroRepository.findByISBN(ISBN);
         if (libro != null) {
@@ -65,6 +68,7 @@ public class LibroService {
                 libro.setISBN(ISBN);
                 libro.setFecha_publicacion(fecha_publicacion);
                 libro.setFecha_prestamo(fecha_prestamo);
+                libro.setFecha_max_devolucion(fecha_max_devolucion);
                 libro.setFecha_devolucion(fecha_devolucion);
                 libro.setEstado_libro(estadoLibro);
                 libroRepository.save(libro);

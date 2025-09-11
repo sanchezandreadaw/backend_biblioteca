@@ -27,12 +27,14 @@ public class LibroRestController {
             @RequestParam("ISBN") String ISBN,
             @RequestParam("fecha_publicacion") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fecha_publicacion,
             @RequestParam(value = "fecha_prestamo", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fecha_prestamo,
+            @RequestParam(value = "fecha_max_devolucion", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fecha_max_devolucion,
             @RequestParam(value = "fecha_devolucion", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fecha_devolucion,
             @RequestParam("estado_libro") EstadoLibro estadoLibro,
             @RequestParam(value = "usuario", required = false) Long usuario) {
 
         try {
-            libroService.saveLibro(titulo, autor, ISBN, fecha_publicacion, fecha_prestamo, fecha_devolucion,
+            libroService.saveLibro(titulo, autor, ISBN, fecha_publicacion, fecha_prestamo, fecha_max_devolucion,
+                    fecha_devolucion,
                     estadoLibro, usuario);
             return new ResponseEntity<>(HttpStatus.ACCEPTED);
         } catch (Exception exception) {
