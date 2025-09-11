@@ -3,7 +3,6 @@ package libros.backend.controllers.UserRestController;
 import java.time.LocalDate;
 import java.util.List;
 
-import org.apache.catalina.connector.Response;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
@@ -16,11 +15,13 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import libros.backend.helpers.FechaFormat;
 import libros.backend.helpers.UserHelper;
 import libros.backend.models.EstadoUsuario;
 import libros.backend.models.Libro;
 import libros.backend.models.TipoUsuario;
 import libros.backend.models.User;
+import libros.backend.services.LibroService;
 import libros.backend.services.UserService;
 
 @RestController
@@ -29,6 +30,9 @@ public class UserRestController {
 
     @Autowired
     private UserService userService;
+
+    @Autowired
+    private LibroService libroService;
 
     @PostMapping("/save_user")
     public ResponseEntity<String> saveUser(@RequestParam("nombre") String nombre,
@@ -178,6 +182,44 @@ public class UserRestController {
             return ResponseEntity
                     .status(HttpStatus.BAD_REQUEST)
                     .body("Se ha producido un error al despenalizar al usuario: " + exception.getMessage());
+        }
+    }
+
+    @PutMapping("/pedir_libro")
+    public ResponseEntity<String> pedirLibro(@RequestParam("titulo") String titulo, @RequestParam("dni") String DNI) {
+        try {
+            Libro libro = libroService.findByTitulo(titulo);
+            userService.pedirLibro(titulo, DNI);
+
+            StringBuilder sb = new StringBuilder();
+            String fecha = libro.getFecha_devolucion().format(FechaFormat.foramto_fecha);
+            sb.append("Préstamo realizado correctamente" + "\n");
+            sb.append("Libro prestado: " + libro.getTitulo() + "\n");
+            sb.append("Fecha máxima de devolución: " + fecha);
+
+            return ResponseEntity
+                    .status(HttpStatus.ACCEPTED)
+                    .body(sb.toString());
+        } catch (Exception exception) {
+            return ResponseEntity
+                    .status(HttpStatus.BAD_REQUEST)
+                    .body("Se ha producido un error al pedir el libro: " + exception.getMessage());
+        }
+    }
+
+    @PutMapping("/devolver_libro")
+    public ResponseEntity<String> devolverLibro(@RequestParam("titulo") String titulo,
+            @RequestParam("dni") String DNI) {
+        try {
+            Libro libro = libroService.findByTitulo(titulo);
+            userService.devolverLibro(titulo, DNI);
+            return ResponseEntity
+                    .status(HttpStatus.ACCEPTED)
+                    .body("El libro: " + libro);
+        } catch (Exception exception) {
+            return ResponseEntity
+                    .status(HttpStatus.BAD_REQUEST)
+                    .body(exception.getMessage());
         }
     }
 

@@ -20,7 +20,7 @@ public class LibroService {
     public void saveLibro(String titulo, String autor, String ISBN, LocalDate fecha_publicacion,
             LocalDate fecha_prestamo, LocalDate fecha_max_devolucion, LocalDate fecha_devolucion,
             EstadoLibro estadoLibro,
-            Long usuario) {
+            Long usuario) throws Exception {
 
         boolean NoExisteISBN = !findByISBN(ISBN).getISBN().equalsIgnoreCase(ISBN);
 
@@ -43,17 +43,31 @@ public class LibroService {
         return libroRepository.findAll();
     }
 
-    public Libro findByISBN(String ISBN) {
-        return libroRepository.findByISBN(ISBN);
+    public Libro findByISBN(String ISBN) throws Exception {
+
+        Libro libro = libroRepository.findByISBN(ISBN.toLowerCase().trim());
+        if (libro == null) {
+            throw new Exception("El libro con ISBN" + ISBN + " no existe");
+        }
+        return libro;
     }
 
-    public void delete(String ISBN) {
-        Libro libro = libroRepository.findByISBN(ISBN);
-        if (libro != null) {
-            libroRepository.delete(libro);
-        } else {
-            System.out.println("El libro que estás intentando eliminar no existe");
+    public Libro findByTitulo(String titulo) throws Exception {
+        Libro libro = libroRepository.findByTitulo(titulo.toLowerCase().trim());
+        if (libro == null) {
+            throw new Exception("El libro con título" + titulo + " no existe");
         }
+        return libro;
+    }
+
+    public Libro delete(String ISBN) throws Exception {
+        Libro libro = libroRepository.findByISBN(ISBN);
+        if (libro == null) {
+            throw new Exception("El libro con ISBN" + ISBN + " no existe");
+        }
+        libroRepository.delete(libro);
+        return libro;
+
     }
 
     public void updateLibro(String titulo, String autor, String ISBN, LocalDate fecha_publicacion,
