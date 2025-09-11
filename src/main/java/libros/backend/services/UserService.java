@@ -47,12 +47,18 @@ public class UserService {
         return userRepository.findAll();
     }
 
-    public User findByDNI(String DNI) {
-        return userRepository.findByDNI(DNI);
+    public User findByDNI(String DNI) throws Exception {
+        User usuario = userRepository.findByDNI(DNI.toLowerCase());
+        if (usuario != null) {
+            return usuario;
+        } else {
+            throw new Exception("El usuario con DNI: " + DNI + " no existe");
+        }
     }
 
-    public User findById(Long id) {
-        return userRepository.findById(id).get();
+    public User findById(Long id) throws Exception {
+        return userRepository.findById(id)
+                .orElseThrow(() -> new Exception("El usuario con id: " + id + " no existe"));
     }
 
     public User update(String nombre, String apellidos, String DNI, String correo, String telefono,
@@ -78,6 +84,15 @@ public class UserService {
             user.setLibros(libros);
         }
         return userRepository.save(user);
+    }
+
+    public User deleteUser(Long id) throws Exception {
+        User usuario = userRepository.findById(id)
+                .orElseThrow(() -> new Exception("El usuario con ID: " + id + "no existe"));
+
+        userRepository.delete(usuario);
+        return usuario;
+
     }
 
 }

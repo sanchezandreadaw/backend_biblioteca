@@ -5,6 +5,8 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -63,6 +65,62 @@ public class UserRestController {
             return ResponseEntity
                     .status(HttpStatus.BAD_REQUEST)
                     .body("Error al actualizar el usuario: " + e.getMessage());
+        }
+    }
+
+    @PostMapping("/delete_user")
+    public ResponseEntity<String> deleteUser(@RequestParam("id") Long id) {
+        try {
+            userService.deleteUser(id);
+            return ResponseEntity
+                    .status(HttpStatus.ACCEPTED)
+                    .body("Usuario con ID : " + id + " eliminado correctamente");
+        } catch (Exception exception) {
+            return ResponseEntity
+                    .status(HttpStatus.BAD_REQUEST)
+                    .body("Error al eliminar el usuario: " + exception.getMessage());
+        }
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<String> getById(@PathVariable Long id) {
+        try {
+            User user = userService.findById(id);
+            StringBuilder sb = new StringBuilder();
+
+            sb.append("Usuario encontrado: " + "\n");
+            sb.append("===================" + "\n");
+            sb.append(UserHelper.showUser(user));
+
+            return ResponseEntity
+                    .status(HttpStatus.ACCEPTED)
+                    .body(sb.toString());
+        } catch (Exception exception) {
+            return ResponseEntity
+                    .status(HttpStatus.BAD_REQUEST)
+                    .body("Se ha producido un error en la búsqueda: " + exception.getMessage());
+        }
+
+    }
+
+    @GetMapping("/getByDNI")
+    public ResponseEntity<String> getByDNI(@RequestParam("dni") String DNI) {
+        try {
+            User usuario = userService.findByDNI(DNI);
+            StringBuilder sb = new StringBuilder();
+
+            sb.append("Usuario encontrado: " + "\n");
+            sb.append("===================" + "\n");
+            sb.append(UserHelper.showUser(usuario));
+
+            return ResponseEntity
+                    .status(HttpStatus.ACCEPTED)
+                    .body(sb.toString());
+
+        } catch (Exception exception) {
+            return ResponseEntity
+                    .status(HttpStatus.BAD_REQUEST)
+                    .body("Error al obtener el usuario: " + exception.getMessage());
         }
     }
 
