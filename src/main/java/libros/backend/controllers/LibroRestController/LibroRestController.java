@@ -106,12 +106,13 @@ public class LibroRestController {
     }
 
     @PostMapping("/delete_libro")
-    public ResponseEntity<String> deleteLibro(@RequestParam("id_libro") Long id) {
+    public ResponseEntity<String> deleteLibro(@RequestParam("id") Long id) {
         try {
             Libro libro = libroService.findById(id);
+            libroService.delete(id);
             return ResponseEntity
                     .status(HttpStatus.ACCEPTED)
-                    .body("El libro" + libro.getTitulo() + " se ha eliminado correctamente de la base de datos.");
+                    .body("El libro: " + libro.getTitulo() + " se ha eliminado correctamente de la base de datos.");
         } catch (Exception exception) {
             return ResponseEntity
                     .status(HttpStatus.ACCEPTED)

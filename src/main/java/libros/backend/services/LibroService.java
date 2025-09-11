@@ -70,12 +70,12 @@ public class LibroService {
         return libro;
     }
 
-    public Libro delete(String ISBN) throws Exception {
-        Libro libro = libroRepository.findByISBN(ISBN);
-        if (libro == null) {
-            throw new Exception("El libro con ISBN" + ISBN + " no existe");
-        }
+    public Libro delete(Long id) throws Exception {
+        Libro libro = libroRepository.findById(id)
+                .orElseThrow(() -> new Exception("El libro con ID: " + id + "no existe"));
+
         libroRepository.delete(libro);
+
         return libro;
 
     }
