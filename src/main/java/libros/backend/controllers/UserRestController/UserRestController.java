@@ -3,6 +3,7 @@ package libros.backend.controllers.UserRestController;
 import java.time.LocalDate;
 import java.util.List;
 
+import org.apache.catalina.connector.Response;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
@@ -146,6 +147,38 @@ public class UserRestController {
         return ResponseEntity
                 .status(HttpStatus.ACCEPTED)
                 .body(sb.toString());
+    }
+
+    @PutMapping("/penalizar usuario")
+    public ResponseEntity<String> penalizarUsuario(@RequestParam("dni") String DNI) {
+        try {
+            User usuario = userService.findByDNI(DNI);
+            userService.despenalizarUsuario(DNI);
+            return ResponseEntity
+                    .status(HttpStatus.ACCEPTED)
+                    .body("Usuario: " + usuario.getNombre() + " " + usuario.getApellidos() + " " + usuario.getDNI()
+                            + " penalizado.");
+        } catch (Exception exception) {
+            return ResponseEntity
+                    .status(HttpStatus.ACCEPTED)
+                    .body("Se ha producido un error al penalizar el usuario: " + exception.getMessage());
+        }
+    }
+
+    @PutMapping("/despenalizar_usuario")
+    public ResponseEntity<String> despenalizarUsuario(@RequestParam("dni") String DNI) {
+        try {
+            User usuario = userService.findByDNI(DNI);
+            userService.despenalizarUsuario(DNI);
+            return ResponseEntity
+                    .status(HttpStatus.ACCEPTED)
+                    .body("Usuario: " + usuario.getNombre() + " " + usuario.getApellidos() + " " + usuario.getDNI()
+                            + " despenalizado.");
+        } catch (Exception exception) {
+            return ResponseEntity
+                    .status(HttpStatus.BAD_REQUEST)
+                    .body("Se ha producido un error al despenalizar al usuario: " + exception.getMessage());
+        }
     }
 
 }
