@@ -44,4 +44,29 @@ public class LibroHelper {
         }
         return false;
     }
+
+    public static String muestraDatosLibro(Libro libro) {
+        StringBuilder sb = new StringBuilder();
+        sb.append("Datos del libro: " + "\n");
+        sb.append("Título: " + libro.getTitulo() + "\n");
+        sb.append("Autor: " + libro.getAutor() + "\n");
+        sb.append("Fecha de publicación: " + libro.getFecha_publicacion() + "\n");
+        sb.append("Estado del libro: " + libro.getEstado_libro() + "\n");
+
+        return sb.toString();
+    }
+
+    public static String showLibros(List<Libro> libros) {
+
+        StringBuilder sb = new StringBuilder();
+        if (libros.size() == 0) {
+            sb.append("No existen libros en la base de datos.");
+            return sb.toString();
+        } else {
+            for (Libro libro : libros) {
+                sb.append(muestraDatosLibro(libro));
+            }
+            return sb.toString();
+        }
+    }
 }

@@ -1,17 +1,20 @@
 package libros.backend.controllers.LibroRestController;
 
 import java.time.LocalDate;
+import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import libros.backend.helpers.LibroHelper;
 import libros.backend.models.EstadoLibro;
 import libros.backend.models.Libro;
 import libros.backend.services.LibroService;
@@ -66,4 +69,71 @@ public class LibroRestController {
         }
 
     }
+
+    @PostMapping("/delete_libro")
+    public ResponseEntity<String> deleteLibro(@RequestParam("id_libro") Long id) {
+        try {
+            Libro libro = libroService.findById(id);
+            return ResponseEntity
+                    .status(HttpStatus.ACCEPTED)
+                    .body("El libro" + libro.getTitulo() + " se ha eliminado correctamente de la base de datos.");
+        } catch (Exception exception) {
+            return ResponseEntity
+                    .status(HttpStatus.ACCEPTED)
+                    .body("Error al eliminar el libro: " + exception.getMessage());
+        }
+    }
+
+    @GetMapping("/getAll")
+    public ResponseEntity<String> getAll() {
+        List<Libro> libros = libroService.findAll();
+        return ResponseEntity
+                .status(HttpStatus.ACCEPTED)
+                .body(LibroHelper.showLibros(libros));
+    }
+
+    @GetMapping("/findById")
+    public ResponseEntity<String> getLibroById(@RequestParam("id") Long id) {
+        try {
+            Libro libro = libroService.findById(id);
+            return ResponseEntity
+                    .status(HttpStatus.ACCEPTED)
+                    .body(LibroHelper.muestraDatosLibro(libro));
+        } catch (Exception excetpion) {
+            return ResponseEntity
+                    .status(HttpStatus.BAD_REQUEST)
+                    .body("Se ha producido un error al obtener el libro: " + excetpion.getMessage());
+        }
+    }
+
+    @GetMapping("/findByISBN")
+    public ResponseEntity<String> getLibroByISBN(@RequestParam("ISBN") String ISBN) {
+        try {
+            Libro libro = libroService.findByISBN(ISBN);
+            return ResponseEntity
+                    .status(HttpStatus.ACCEPTED)
+                    .body(LibroHelper.muestraDatosLibro(libro));
+        } catch (Exception excetpion) {
+            return ResponseEntity
+                    .status(HttpStatus.BAD_REQUEST)
+                    .body("Se ha producido un error al obtener el libro: " + excetpion.getMessage());
+        }
+
+    }
+
+    @GetMapping("/findByTitulo")
+    public ResponseEntity<String> getLibroByTitulo(@RequestParam("titulo") String titulo) {
+        try {
+            Libro libro = libroService.findByTitulo(titulo);
+            return ResponseEntity
+                    .status(HttpStatus.ACCEPTED)
+                    .body(LibroHelper.muestraDatosLibro(libro));
+        } catch (Exception excetpion) {
+            return ResponseEntity
+                    .status(HttpStatus.BAD_REQUEST)
+                    .body("Se ha producido un error al obtener el libro: " + excetpion.getMessage());
+        }
+
+    }
+
 }

@@ -60,6 +60,10 @@ public class LibroService {
         return libro;
     }
 
+    public Libro findById(Long id) throws Exception {
+        return libroRepository.findById(id).orElseThrow(() -> new Exception("El libro con ID: " + id + " no existe"));
+    }
+
     public Libro findByTitulo(String titulo) throws Exception {
         Libro libro = libroRepository.findByTitulo(titulo.toLowerCase().trim());
         if (libro == null) {
