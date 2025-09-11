@@ -124,4 +124,19 @@ public class UserRestController {
         }
     }
 
+    @GetMapping("/getAll")
+    public ResponseEntity<String> getAllUsers() {
+        List<User> usuarios = userService.findAll();
+        StringBuilder sb = new StringBuilder();
+        sb.append("Listado de usuarios: " + "\n");
+        sb.append("====================" + "\n");
+        for (User usuario : usuarios) {
+            sb.append(UserHelper.showUser(usuario));
+            sb.append("====================" + "\n");
+        }
+        return ResponseEntity
+                .status(HttpStatus.ACCEPTED)
+                .body(sb.toString());
+    }
+
 }
