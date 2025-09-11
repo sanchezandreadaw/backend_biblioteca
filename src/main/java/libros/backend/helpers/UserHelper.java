@@ -119,12 +119,17 @@ public class UserHelper {
 		}
 	}
 
-	public boolean isNotPenalizedUser(User usuario) throws Exception {
+	public void isPenalizedUser(User usuario) throws Exception {
 
 		if (usuario.getEstado_usuario().equals(EstadoUsuario.PENALIZADO)) {
-			return true;
+			StringBuilder sb = new StringBuilder();
+			if (usuario.getFecha_fin_penalizacion() != null) {
+				sb.append("No puedes pedir ningún libro porque estás penalizado hasta el día: "
+						+ usuario.getFecha_fin_penalizacion());
+				throw new Exception(sb.toString());
+			}
 		}
-		return false;
+
 	}
 
 	public boolean verifyBookStatus(Libro libro) throws Exception {

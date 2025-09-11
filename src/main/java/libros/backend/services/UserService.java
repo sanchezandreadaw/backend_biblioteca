@@ -114,19 +114,11 @@ public class UserService {
             UserHelper userHelper = new UserHelper();
 
             userHelper.isFechaMaxDevolucion(libro.getFecha_max_devolucion(), usuario);
-
-            if (!userHelper.isNotPenalizedUser(usuario)) {
-                StringBuilder sb = new StringBuilder();
-                if (usuario.getFecha_fin_penalizacion() != null) {
-                    sb.append("No puedes pedir ningún libro porque estás penalizado hasta el día: "
-                            + usuario.getFecha_fin_penalizacion());
-                    throw new Exception(sb.toString());
-                }
-            }
-
+            userHelper.isPenalizedUser(usuario);
             userHelper.verifyBookStatus(libro);
             userHelper.actualizarLibroAlPrestar(libro, usuario);
             return libro;
+
         } catch (Exception exception) {
             throw new Exception(exception.getMessage());
         }
