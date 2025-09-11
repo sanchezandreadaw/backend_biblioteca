@@ -44,6 +44,7 @@ public class LibroHelper {
         sb.append("Autor: " + libro.getAutor() + "\n");
         sb.append("Fecha de publicación: " + libro.getFecha_publicacion() + "\n");
         sb.append("Estado del libro: " + libro.getEstado_libro() + "\n");
+        sb.append("=============================" + "\n");
 
         return sb.toString();
     }

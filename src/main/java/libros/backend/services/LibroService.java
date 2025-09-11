@@ -65,7 +65,7 @@ public class LibroService {
     public Libro findByTitulo(String titulo) throws Exception {
         Libro libro = libroRepository.findByTitulo(titulo.toLowerCase().trim());
         if (libro == null) {
-            throw new Exception("El libro con título" + titulo + " no existe");
+            throw new Exception("El libro con título: " + titulo + " no existe");
         }
         return libro;
     }

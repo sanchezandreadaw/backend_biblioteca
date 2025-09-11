@@ -153,27 +153,28 @@ public class UserRestController {
                 .body(sb.toString());
     }
 
-    @PutMapping("/penalizar usuario")
-    public ResponseEntity<String> penalizarUsuario(@RequestParam("dni") String DNI) {
+    @PutMapping("/penalizar_usuario")
+    public ResponseEntity<String> penalizarUsuario(@RequestParam("id") Long id) {
         try {
-            User usuario = userService.findByDNI(DNI);
-            userService.despenalizarUsuario(DNI);
+            User usuario = userService.findById(id);
+            userService.penalizarUsuario(id);
             return ResponseEntity
                     .status(HttpStatus.ACCEPTED)
-                    .body("Usuario: " + usuario.getNombre() + " " + usuario.getApellidos() + " " + usuario.getDNI()
+                    .body("Usuario: " + usuario.getNombre() + " " + usuario.getApellidos() + " " + " DNI: "
+                            + usuario.getDNI()
                             + " penalizado.");
         } catch (Exception exception) {
             return ResponseEntity
-                    .status(HttpStatus.ACCEPTED)
+                    .status(HttpStatus.BAD_REQUEST)
                     .body("Se ha producido un error al penalizar el usuario: " + exception.getMessage());
         }
     }
 
     @PutMapping("/despenalizar_usuario")
-    public ResponseEntity<String> despenalizarUsuario(@RequestParam("dni") String DNI) {
+    public ResponseEntity<String> despenalizarUsuario(@RequestParam("id") Long id) {
         try {
-            User usuario = userService.findByDNI(DNI);
-            userService.despenalizarUsuario(DNI);
+            User usuario = userService.findById(id);
+            userService.despenalizarUsuario(id);
             return ResponseEntity
                     .status(HttpStatus.ACCEPTED)
                     .body("Usuario: " + usuario.getNombre() + " " + usuario.getApellidos() + " " + usuario.getDNI()
@@ -188,14 +189,16 @@ public class UserRestController {
     @PutMapping("/pedir_libro")
     public ResponseEntity<String> pedirLibro(@RequestParam("titulo") String titulo, @RequestParam("dni") String DNI) {
         try {
-            Libro libro = libroService.findByTitulo(titulo);
+            Libro libro = libroService.findByTitulo(titulo.toLowerCase().trim());
             userService.pedirLibro(titulo, DNI);
 
             StringBuilder sb = new StringBuilder();
-            String fecha = libro.getFecha_devolucion().format(FechaFormat.foramto_fecha);
+            String fecha = libro.getFecha_max_devolucion().format(FechaFormat.foramto_fecha);
             sb.append("Préstamo realizado correctamente" + "\n");
             sb.append("Libro prestado: " + libro.getTitulo() + "\n");
-            sb.append("Fecha máxima de devolución: " + fecha);
+            if (fecha != null) {
+                sb.append("Fecha máxima de devolución: " + fecha);
+            }
 
             return ResponseEntity
                     .status(HttpStatus.ACCEPTED)
@@ -211,11 +214,11 @@ public class UserRestController {
     public ResponseEntity<String> devolverLibro(@RequestParam("titulo") String titulo,
             @RequestParam("dni") String DNI) {
         try {
-            Libro libro = libroService.findByTitulo(titulo);
+            Libro libro = libroService.findByTitulo(titulo.trim().toLowerCase());
             userService.devolverLibro(titulo, DNI);
             return ResponseEntity
                     .status(HttpStatus.ACCEPTED)
-                    .body("El libro: " + libro);
+                    .body("El libro: " + libro.getTitulo() + " se ha devuelto correctamente");
         } catch (Exception exception) {
             return ResponseEntity
                     .status(HttpStatus.BAD_REQUEST)
