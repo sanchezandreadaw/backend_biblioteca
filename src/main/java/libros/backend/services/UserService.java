@@ -25,7 +25,7 @@ public class UserService {
     @Autowired
     private LibroRepository libroRepository;
 
-    public void save(String nombre, String apellidos, String DNI, String telefono, String correo,
+    public User createUser(String nombre, String apellidos, String DNI, String telefono, String correo,
             EstadoUsuario estado_usuario, TipoUsuario tipoUsuario, LocalDate fecha_fin_penalizacion,
             List<Libro> libros) throws Exception {
 
@@ -45,8 +45,7 @@ public class UserService {
             user.setFecha_fin_penalizacion(fecha_fin_penalizacion);
             user.setLibros(libros);
             userRepository.save(user);
-            System.out.println("Datos del usuario: ");
-            System.out.println(UserHelper.showUser(user));
+            return user;
 
         } else {
             System.out.println("Error al guardar el usuario.");

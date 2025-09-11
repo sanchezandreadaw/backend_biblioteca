@@ -7,20 +7,15 @@ import libros.backend.models.Libro;
 
 public class LibroHelper {
 
-    public static boolean EsUnLibroValido(String titulo, String autor, String ISBN, LocalDate fecha_publicacion) {
+    public static boolean EsUnLibroValido(String titulo, String autor, LocalDate fecha_publicacion) {
 
-        if (titulo.length() < 3 || titulo.length() > 25) {
+        if (titulo.length() < 3) {
             System.out.println("El título del libro debe tener entre 3 y 25 caracteres");
             return false;
         }
 
-        if (autor.length() < 3 || autor.length() > 25) {
+        if (autor.length() < 3) {
             System.out.println("El nombre del autor debe tener entre 3 y 25 caracteres");
-            return false;
-        }
-
-        if (ISBN.length() != 13) {
-            System.out.println("El ISBN debe tener 13 caracteres");
             return false;
         }
 

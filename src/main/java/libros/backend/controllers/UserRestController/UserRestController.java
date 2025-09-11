@@ -44,7 +44,7 @@ public class UserRestController {
             @RequestParam(value = "libros", required = false) List<Libro> libros) {
 
         try {
-            userService.save(nombre, apellidos, DNI, telefono, correo, estadoUsuario, tipoUsuario,
+            userService.createUser(nombre, apellidos, DNI, telefono, correo, estadoUsuario, tipoUsuario,
                     fecha_fin_penalizacion, libros);
             return ResponseEntity
                     .status(HttpStatus.ACCEPTED)

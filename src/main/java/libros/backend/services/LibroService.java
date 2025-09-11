@@ -10,8 +10,7 @@ import libros.backend.helpers.LibroHelper;
 import libros.backend.models.EstadoLibro;
 import libros.backend.models.Libro;
 import libros.backend.models.User;
-import libros.backend.repositories.LibroRepository;
-import libros.backend.repositories.UserRepository;
+import libros.backend.repositories.LibroRepository;;
 
 @Service
 public class LibroService {
@@ -19,18 +18,12 @@ public class LibroService {
     @Autowired
     private LibroRepository libroRepository;
 
-    @Autowired
-    private UserRepository userRepository;
-
-    public void saveLibro(String titulo, String autor, String ISBN, LocalDate fecha_publicacion,
+    public Libro saveLibro(String titulo, String autor, String ISBN, LocalDate fecha_publicacion,
             LocalDate fecha_prestamo, LocalDate fecha_max_devolucion, LocalDate fecha_devolucion,
             EstadoLibro estadoLibro,
-            Long id_usuario) throws Exception {
+            User usuario) throws Exception {
 
-        User usuario = userRepository.findById(id_usuario)
-                .orElseThrow(() -> new Exception("El usuario con ID: " + id_usuario + " no existe"));
-
-        if (LibroHelper.EsUnLibroValido(titulo, autor, ISBN, fecha_publicacion)
+        if (LibroHelper.EsUnLibroValido(titulo, autor, fecha_publicacion)
                 && !LibroHelper.verifyISBN(ISBN.toLowerCase().trim(), libroRepository.findAll(), "no")) {
             Libro libro = new Libro();
             libro.setTitulo(titulo);
@@ -42,7 +35,12 @@ public class LibroService {
             libro.setFecha_devolucion(fecha_devolucion);
             libro.setEstado_libro(estadoLibro);
             libro.setUsuario(usuario);
+
             libroRepository.save(libro);
+
+            return libro;
+        } else {
+            throw new Exception("Error al guardar el libro. Valores no válidos");
         }
 
     }
@@ -82,29 +80,30 @@ public class LibroService {
 
     }
 
-    public void updateLibro(String titulo, String autor, String ISBN, LocalDate fecha_publicacion,
+    public Libro updateLibro(String titulo, String autor, String ISBN, LocalDate fecha_publicacion,
             LocalDate fecha_prestamo, LocalDate fecha_max_devolucion, LocalDate fecha_devolucion,
-            EstadoLibro estadoLibro, Long id_usuario) throws Exception {
+            EstadoLibro estadoLibro, User usuario, Long id_libro) throws Exception {
 
-        Libro libro = libroRepository.findByISBN(ISBN);
-        User usuario = userRepository.findById(id_usuario)
-                .orElseThrow(() -> new Exception("El usuario con id : " + id_usuario + "no existe"));
-        if (libro != null) {
-            if (LibroHelper.EsUnLibroValido(titulo, autor, ISBN, fecha_publicacion)
-                    && !LibroHelper.verifyISBN(ISBN.toLowerCase().trim(), libroRepository.findAll(), "yes")) {
-                libro.setTitulo(titulo);
-                libro.setAutor(autor);
-                libro.setISBN(ISBN);
-                libro.setFecha_publicacion(fecha_publicacion);
-                libro.setFecha_prestamo(fecha_prestamo);
-                libro.setFecha_max_devolucion(fecha_max_devolucion);
-                libro.setFecha_devolucion(fecha_devolucion);
-                libro.setEstado_libro(estadoLibro);
-                libro.setUsuario(usuario);
-                libroRepository.save(libro);
-            }
+        Libro libro = libroRepository.findById(id_libro)
+                .orElseThrow(() -> new Exception("El libro con ID: " + id_libro + "no existe"));
+
+        if (LibroHelper.EsUnLibroValido(titulo, autor, fecha_publicacion)
+                && !LibroHelper.verifyISBN(ISBN.toLowerCase().trim(), libroRepository.findAll(), "yes")) {
+            libro.setTitulo(titulo);
+            libro.setAutor(autor);
+            libro.setISBN(ISBN);
+            libro.setFecha_publicacion(fecha_publicacion);
+            libro.setFecha_prestamo(fecha_prestamo);
+            libro.setFecha_max_devolucion(fecha_max_devolucion);
+            libro.setFecha_devolucion(fecha_devolucion);
+            libro.setEstado_libro(estadoLibro);
+            libro.setUsuario(usuario);
+
+            libroRepository.save(libro);
+
+            return libro;
         } else {
-            System.out.println("El libro que estás intentando actualizar no existe");
+            throw new Exception("Error al guardar el libro. Valores no válidos");
         }
 
     }

@@ -1,5 +1,5 @@
 package libros.backend.models;
 
 public enum EstadoLibro {
-    PRESTADO, DEVUELTO
+    PRESTADO, DEVUELTO, SIN_PRESTAR
 }
