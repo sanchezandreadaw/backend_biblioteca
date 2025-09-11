@@ -1,15 +1,12 @@
 package libros.backend.services;
 
 import java.time.LocalDate;
-import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import libros.backend.helpers.FechaFormat;
 import libros.backend.helpers.UserHelper;
-import libros.backend.models.EstadoLibro;
 import libros.backend.models.EstadoUsuario;
 import libros.backend.models.Libro;
 import libros.backend.models.TipoUsuario;
@@ -113,68 +110,44 @@ public class UserService {
         User usuario = userRepository.findByDNI(DNI.trim().toLowerCase());
         Libro libro = libroRepository.findByTitulo(titulo.toLowerCase().trim());
 
-        if (usuario.getEstado_usuario().equals(EstadoUsuario.PENALIZADO)) {
-            StringBuilder sb = new StringBuilder();
-            String fecha = usuario.getFecha_fin_penalizacion().format(FechaFormat.foramto_fecha);
-            sb.append("No puedes pedir ningún libro prestado debido a que has sido penalizado.");
-            if (fecha != null) {
-                sb.append("La penalización finalizará el: " + fecha);
+        try {
+            UserHelper userHelper = new UserHelper();
+
+            userHelper.isFechaMaxDevolucion(libro.getFecha_max_devolucion(), usuario);
+
+            if (!userHelper.isNotPenalizedUser(usuario)) {
+                StringBuilder sb = new StringBuilder();
+                if (usuario.getFecha_fin_penalizacion() != null) {
+                    sb.append("No puedes pedir ningún libro porque estás penalizado hasta el día: "
+                            + usuario.getFecha_fin_penalizacion());
+                    throw new Exception(sb.toString());
+                }
             }
 
-            throw new Exception(sb.toString());
+            userHelper.verifyBookStatus(libro);
+            userHelper.actualizarLibroAlPrestar(libro, usuario);
+            return libro;
+        } catch (Exception exception) {
+            throw new Exception(exception.getMessage());
         }
-
-        if (libro.getEstado_libro().equals(EstadoLibro.PRESTADO)) {
-            throw new Exception("El libro: " + libro.getTitulo() + " ya ha sido prestado.");
-        }
-        LocalDate fechaPrestamo = LocalDate.now();
-        LocalDate maxFechaDevolucion = fechaPrestamo.plusDays(15);
-
-        libro.setFecha_prestamo(fechaPrestamo);
-        libro.setFecha_max_devolucion(maxFechaDevolucion);
-        libro.setEstado_libro(EstadoLibro.PRESTADO);
-        libro.setUsuario(usuario);
-
-        List<Libro> libros = new ArrayList<>();
-        libros.add(libro);
-        usuario.setLibros(libros);
-
-        libroRepository.save(libro);
-        userRepository.save(usuario);
-
-        return libro;
     }
 
     public Libro devolverLibro(String titulo, String DNI) throws Exception {
-        User usuario = userRepository.findByDNI(DNI.toLowerCase().trim());
-        Libro libro = libroRepository.findByTitulo(titulo.toLowerCase().trim());
-        libro.setFecha_devolucion(LocalDate.now());
 
-        if (libro.getFecha_devolucion().isAfter(libro.getFecha_max_devolucion())) {
-            usuario.setEstado_usuario(EstadoUsuario.PENALIZADO);
-            usuario.setFecha_fin_penalizacion(LocalDate.now().plusDays(20));
-            String fecha = usuario.getFecha_fin_penalizacion().format(FechaFormat.foramto_fecha);
+        try {
+            User usuario = userRepository.findByDNI(DNI.toLowerCase().trim());
+            Libro libro = libroRepository.findByTitulo(titulo.toLowerCase().trim());
+            libro.setFecha_devolucion(libro.getFecha_max_devolucion().plusDays(1));
+            UserHelper userHelper = new UserHelper();
 
-            StringBuilder sb = new StringBuilder();
-            sb.append("Has superado el plazo máximo de devolución y serás penalizado/a" + "\n");
-            if (fecha != null) {
-                sb.append("La penalización finaliza en la fecha: " + fecha);
-            }
+            userHelper.actualizarLibroAlDevolver(libro, usuario);
+            userHelper.seraPenalizado(libro, usuario);
 
-            throw new Exception(sb.toString());
+            return libro;
 
+        } catch (Exception exception) {
+            throw new Exception(exception.getMessage());
         }
-        libro.setUsuario(null);
-        List<Libro> libros = usuario.getLibros();
-        if (libros != null) {
-            libros = libros.stream().filter((libro_devolver) -> libro_devolver.getId() != libro.getId()).toList();
-            usuario.setLibros(libros);
-        }
-        libro.setEstado_libro(EstadoLibro.SIN_PRESTAR);
-
-        libroRepository.save(libro);
-        userRepository.save(usuario);
-        return libro;
     }
 
     public User penalizarUsuario(Long id) throws Exception {
