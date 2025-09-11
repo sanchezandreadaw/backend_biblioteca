@@ -23,8 +23,10 @@ public class LibroService {
             EstadoLibro estadoLibro,
             User usuario) throws Exception {
 
-        if (LibroHelper.EsUnLibroValido(titulo, autor, fecha_publicacion)
-                || !LibroHelper.verifyISBN(ISBN.toLowerCase().trim(), libroRepository.findAll(), "no")) {
+        try {
+
+            LibroHelper.EsUnLibroValido(titulo, autor, fecha_publicacion);
+            LibroHelper.verifyISBN(ISBN, libroRepository.findAll(), "no");
             Libro libro = new Libro();
             libro.setTitulo(titulo);
             libro.setAutor(autor);
@@ -35,12 +37,10 @@ public class LibroService {
             libro.setFecha_devolucion(fecha_devolucion);
             libro.setEstado_libro(estadoLibro);
             libro.setUsuario(usuario);
-
             libroRepository.save(libro);
-
             return libro;
-        } else {
-            throw new Exception("Error al guardar el libro. Valores no válidos");
+        } catch (Exception exception) {
+            throw new Exception(exception.getMessage());
         }
 
     }
@@ -87,22 +87,24 @@ public class LibroService {
         Libro libro = libroRepository.findById(id_libro)
                 .orElseThrow(() -> new Exception("El libro con ID: " + id_libro + "no existe"));
 
-        if (!LibroHelper.EsUnLibroValido(titulo, autor, fecha_publicacion)
-                || LibroHelper.verifyISBN(ISBN.toLowerCase().trim(), libroRepository.findAll(), "yes")) {
-            throw new Exception("Los valores introducidos no son correctos. No se actualizará el libro.");
+        try {
+            LibroHelper.EsUnLibroValido(titulo, autor, fecha_publicacion);
+            LibroHelper.verifyISBN(ISBN, libroRepository.findAll(), "yes");
+            libro.setTitulo(titulo);
+            libro.setAutor(autor);
+            libro.setISBN(ISBN);
+            libro.setFecha_publicacion(fecha_publicacion);
+            libro.setFecha_prestamo(fecha_prestamo);
+            libro.setFecha_max_devolucion(fecha_max_devolucion);
+            libro.setFecha_devolucion(fecha_devolucion);
+            libro.setEstado_libro(estadoLibro);
+            libro.setUsuario(usuario);
+
+            return libroRepository.save(libro);
+        } catch (Exception exception) {
+            throw new Exception(exception.getMessage());
         }
 
-        libro.setTitulo(titulo);
-        libro.setAutor(autor);
-        libro.setISBN(ISBN);
-        libro.setFecha_publicacion(fecha_publicacion);
-        libro.setFecha_prestamo(fecha_prestamo);
-        libro.setFecha_max_devolucion(fecha_max_devolucion);
-        libro.setFecha_devolucion(fecha_devolucion);
-        libro.setEstado_libro(estadoLibro);
-        libro.setUsuario(usuario);
-
-        return libroRepository.save(libro);
     }
 
 }

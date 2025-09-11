@@ -7,34 +7,31 @@ import libros.backend.models.Libro;
 
 public class LibroHelper {
 
-    public static boolean EsUnLibroValido(String titulo, String autor, LocalDate fecha_publicacion) {
+    public static boolean EsUnLibroValido(String titulo, String autor, LocalDate fecha_publicacion) throws Exception {
 
         if (titulo.length() < 3) {
-            System.out.println("El título del libro debe tener entre 3 y 25 caracteres");
-            return false;
+            throw new Exception("El título del libro debe de tener al menos 3 caracteres");
         }
 
         if (autor.length() < 3) {
-            System.out.println("El nombre del autor debe tener entre 3 y 25 caracteres");
-            return false;
+            throw new Exception("El nombre del autor debe de tener al menos 3 caracteres");
         }
 
         if (fecha_publicacion.getYear() < 1950) {
-            System.out.println("La fecha de publicación debe ser mayor o igual al año 1950");
-            return false;
+            throw new Exception("La fecha de publicación NO puede ser inferior a 1950");
         }
 
         return true;
     }
 
-    public static boolean verifyISBN(String ISBN, List<Libro> libros, String updating) {
+    public static boolean verifyISBN(String ISBN, List<Libro> libros, String updating) throws Exception {
         for (Libro libro : libros) {
             if (libro.getISBN().equalsIgnoreCase(ISBN)) {
                 if (updating.equalsIgnoreCase("yes")) {
                     continue;
                 }
                 System.out.println("El libro con ISBN " + ISBN + " ya está registado");
-                return true;
+                throw new Exception("El libro con ISBN: " + ISBN + " ya está registrado.");
             }
         }
         return false;
