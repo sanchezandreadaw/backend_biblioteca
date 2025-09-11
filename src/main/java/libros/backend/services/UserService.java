@@ -60,7 +60,7 @@ public class UserService {
     }
 
     public User findByDNI(String DNI) throws Exception {
-        User usuario = userRepository.findByDNI(DNI.toLowerCase());
+        User usuario = userRepository.findByDNI(DNI.toLowerCase().trim());
         if (usuario != null) {
             return usuario;
         } else {
@@ -110,8 +110,8 @@ public class UserService {
     }
 
     public Libro pedirLibro(String titulo, String DNI) throws Exception {
-        User usuario = userRepository.findByDNI(DNI.toLowerCase());
-        Libro libro = libroRepository.findByTitulo(titulo.toLowerCase());
+        User usuario = userRepository.findByDNI(DNI.toLowerCase().trim());
+        Libro libro = libroRepository.findByTitulo(titulo.toLowerCase().trim());
 
         if (usuario.getEstado_usuario().equals(EstadoUsuario.PENALIZADO)) {
             StringBuilder sb = new StringBuilder();
@@ -136,8 +136,8 @@ public class UserService {
     }
 
     public Libro devolverLibro(String titulo, String DNI) throws Exception {
-        User usuario = userRepository.findByDNI(DNI.toLowerCase());
-        Libro libro = libroRepository.findByTitulo(titulo.toLowerCase());
+        User usuario = userRepository.findByDNI(DNI.toLowerCase().trim());
+        Libro libro = libroRepository.findByTitulo(titulo.toLowerCase().trim());
         libro.setFecha_devolucion(LocalDate.now());
 
         if (libro.getFecha_devolucion().isAfter(libro.getFecha_max_devolucion())) {
@@ -153,6 +153,25 @@ public class UserService {
 
         }
         return libro;
+    }
+
+    public User penalizarUsuario(String DNI) throws Exception {
+        User usuario = userRepository.findByDNI(DNI.toLowerCase().trim());
+        if (usuario == null) {
+            throw new Exception("El usuario con DNI: " + DNI + " no existe.");
+        }
+        usuario.setEstado_usuario(EstadoUsuario.PENALIZADO);
+        return usuario;
+
+    }
+
+    public User despenalizarUsuario(String DNI) throws Exception {
+        User usuario = userRepository.findByDNI(DNI.toLowerCase().trim());
+        if (usuario == null) {
+            throw new Exception("El usuario con DNI: " + DNI + "no existe.");
+        }
+        usuario.setEstado_usuario(EstadoUsuario.SIN_PENALIZAR);
+        return usuario;
     }
 
 }
