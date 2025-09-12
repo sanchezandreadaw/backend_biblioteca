@@ -1,12 +1,13 @@
 package libros.backend.services;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
 import libros.backend.helpers.UserHelper;
+import libros.backend.models.EstadoLibro;
 import libros.backend.models.EstadoUsuario;
 import libros.backend.models.Libro;
 import libros.backend.models.TipoUsuario;
@@ -111,12 +112,13 @@ public class UserService {
         Libro libro = libroRepository.findByTitulo(titulo.toLowerCase().trim());
 
         try {
-            UserHelper userHelper = new UserHelper();
+            if (libro.getFecha_max_devolucion() != null) {
+                isFechaMaxDevolucion(libro.getFecha_max_devolucion(), usuario);
+            }
+            isPenalizedUser(usuario);
+            verifyBookStatus(libro);
+            actualizarLibroAlPrestar(libro, usuario);
 
-            userHelper.isFechaMaxDevolucion(libro.getFecha_max_devolucion(), usuario);
-            userHelper.isPenalizedUser(usuario);
-            userHelper.verifyBookStatus(libro);
-            userHelper.actualizarLibroAlPrestar(libro, usuario);
             return libro;
 
         } catch (Exception exception) {
@@ -129,11 +131,17 @@ public class UserService {
         try {
             User usuario = userRepository.findByDNI(DNI.toLowerCase().trim());
             Libro libro = libroRepository.findByTitulo(titulo.toLowerCase().trim());
-            libro.setFecha_devolucion(libro.getFecha_max_devolucion().plusDays(1));
-            UserHelper userHelper = new UserHelper();
+            libro.setFecha_devolucion(LocalDate.now());
 
-            userHelper.actualizarLibroAlDevolver(libro, usuario);
-            userHelper.seraPenalizado(libro, usuario);
+            if (seraPenalizado(libro, usuario)) {
+                usuario.setEstado_usuario(EstadoUsuario.PENALIZADO);
+                usuario.setFecha_fin_penalizacion(LocalDate.now().plusDays(20));
+                actualizarLibroAlDevolver(libro, usuario);
+
+                throw new Exception("Has superado el plazo máximo para devolver el libro y serás penalizado hasta:"
+                        + LocalDate.now().plusDays(20) + "\n" + "La devolución se ha completado correctamente.");
+            }
+            actualizarLibroAlDevolver(libro, usuario);
 
             return libro;
 
@@ -161,6 +169,83 @@ public class UserService {
         usuario.setFecha_fin_penalizacion(null);
         userRepository.save(usuario);
         return usuario;
+    }
+
+    public void isFechaMaxDevolucion(LocalDate fecha_max_devolucion, User usuario) {
+        if (usuario.getFecha_fin_penalizacion() != null) {
+            if (usuario.getEstado_usuario().equals(EstadoUsuario.PENALIZADO)
+                    && LocalDate.now().isAfter(fecha_max_devolucion)) {
+                usuario.setFecha_fin_penalizacion(null);
+                userRepository.save(usuario);
+
+            }
+        }
+    }
+
+    public void isPenalizedUser(User usuario) throws Exception {
+
+        if (usuario.getEstado_usuario().equals(EstadoUsuario.PENALIZADO)) {
+            StringBuilder sb = new StringBuilder();
+            if (usuario.getFecha_fin_penalizacion() != null) {
+                sb.append("No puedes pedir ningún libro porque estás penalizado hasta el día: "
+                        + usuario.getFecha_fin_penalizacion());
+                throw new Exception(sb.toString());
+            }
+        }
+
+    }
+
+    public boolean verifyBookStatus(Libro libro) throws Exception {
+        if (libro.getEstado_libro().equals(EstadoLibro.PRESTADO)) {
+            throw new Exception("El libro: " + libro.getTitulo() + " ya ha sido prestado");
+        }
+        return false;
+    }
+
+    public Libro actualizarLibroAlPrestar(Libro libro, User usuario) {
+        LocalDate fechaPrestamo = LocalDate.now();
+        LocalDate maxFechaDevolucion = fechaPrestamo.plusDays(15);
+
+        libro.setFecha_prestamo(fechaPrestamo);
+        libro.setFecha_max_devolucion(maxFechaDevolucion);
+        libro.setEstado_libro(EstadoLibro.PRESTADO);
+        libro.setUsuario(usuario);
+
+        List<Libro> libros = new ArrayList<>();
+        libros.add(libro);
+        usuario.setLibros(libros);
+
+        libroRepository.save(libro);
+        userRepository.save(usuario);
+        return libro;
+
+    }
+
+    public boolean seraPenalizado(Libro libro, User usuario) {
+
+        if (libro.getFecha_devolucion() != null) {
+            if (libro.getFecha_devolucion().isAfter(libro.getFecha_max_devolucion())) {
+                return true;
+            }
+        }
+        return false;
+
+    }
+
+    public void actualizarLibroAlDevolver(Libro libro, User usuario) {
+        libro.setUsuario(null);
+        List<Libro> libros = usuario.getLibros();
+        if (libros != null) {
+            libros = libros.stream().filter((libro_devolver) -> libro_devolver.getId() != libro.getId()).toList();
+            usuario.setLibros(libros);
+        }
+        libro.setEstado_libro(EstadoLibro.SIN_PRESTAR);
+        libro.setFecha_devolucion(null);
+        libro.setFecha_max_devolucion(null);
+        libro.setFecha_prestamo(null);
+
+        libroRepository.save(libro);
+        userRepository.save(usuario);
     }
 
 }
