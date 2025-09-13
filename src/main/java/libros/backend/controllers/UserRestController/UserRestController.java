@@ -37,14 +37,16 @@ public class UserRestController {
     @PostMapping("/save_user")
     public ResponseEntity<String> saveUser(@RequestParam("nombre") String nombre,
             @RequestParam("apellidos") String apellidos,
-            @RequestParam("DNI") String DNI, @RequestParam("telefono") String telefono,
+            @RequestParam("DNI") String DNI,
+            @RequestParam("clave") String clave,
+            @RequestParam("telefono") String telefono,
             @RequestParam("correo") String correo, @RequestParam("estado_usuario") EstadoUsuario estadoUsuario,
             @RequestParam("tipo_usuario") TipoUsuario tipoUsuario,
             @RequestParam(value = "fecha_fin_penalizacion", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fecha_fin_penalizacion,
             @RequestParam(value = "libros", required = false) List<Libro> libros) {
 
         try {
-            userService.createUser(nombre, apellidos, DNI, telefono, correo, estadoUsuario, tipoUsuario,
+            userService.createUser(nombre, apellidos, DNI, clave, telefono, correo, estadoUsuario, tipoUsuario,
                     fecha_fin_penalizacion, libros);
             return ResponseEntity
                     .status(HttpStatus.ACCEPTED)
