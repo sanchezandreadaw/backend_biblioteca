@@ -1,25 +1,28 @@
 package libros.backend.helpers;
 
-import java.util.Arrays;
 import java.util.List;
 import libros.backend.models.Libro;
 import libros.backend.models.User;
 
 public class UserHelper {
 
-	private static String[] alphabetUpper = {
-			"A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M",
-			"N", "Ñ", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z"
+	private static char[] alphabetUpper = {
+			'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M',
+			'N', 'Ñ', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z'
 	};
 
-	private static String[] specialChars = {
-			"!", "\"", "#", "$", "%", "&", "'", "(", ")", "*", "+", ",", "-", ".", "/",
-			":", ";", "<", "=", ">", "?", "@", "[", "\\", "]", "^", "_", "`", "{", "|",
-			"}", "~"
+	private static char[] specialChars = {
+			'!', '"', '#', '$', '%', '&', '\'', '(', ')', '*', '+', ',', '-', '.', '/',
+			':', ';', '<', '=', '>', '?', '@', '[', '\\', ']', '^', '_', '`', '{', '|',
+			'}', '~'
 	};
 
-	private static String[] alphabetLower = (String[]) Arrays.asList(alphabetUpper).stream()
-			.map((caracter) -> caracter.toLowerCase()).toArray();
+	private static char[] numeros = { '1', '2', '3', '4', '5', '6', '7', '8', '9', '0' };
+
+	private static char[] alphabetLower = {
+			'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm',
+			'n', 'ñ', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z'
+	};
 
 	public static boolean isValidUser(String nombre, String apellidos, String DNI, String telefono, String correo)
 			throws Exception {
@@ -88,16 +91,14 @@ public class UserHelper {
 	public static boolean isValidPassword(String password) throws Exception {
 
 		try {
-			if (password.length() >= 8) {
+			if (password.length() < 8) {
 				throw new Exception("La contraseña debe tener al menos 8 caracteres");
 			}
 
-			int currentIndex = 0;
-			int lastIndex = 0;
-
-			contieneMayuscula(currentIndex, lastIndex, password);
-			contieneMinuscula(currentIndex, lastIndex, password);
-			contieneCaracterEspecial(currentIndex, lastIndex, password);
+			contieneMayuscula(password);
+			contieneMinuscula(password);
+			contieneCaracterEspecial(password);
+			contieneUnNumero(password);
 		} catch (Exception exception) {
 			throw new Exception(exception.getMessage());
 		}
@@ -105,48 +106,56 @@ public class UserHelper {
 		return true;
 	}
 
-	public static boolean contieneMayuscula(int currentIndex, int lastIndex, String password) throws Exception {
-
-		for (int i = 0; i < alphabetUpper.length; i++) {
-			currentIndex = i;
-			lastIndex = (alphabetUpper.length - 1);
-			if (!password.contains(alphabetUpper[i]) && currentIndex < lastIndex) {
-				continue;
-			} else {
-				throw new Exception("La clave debe tener al menos una letra mayúscula");
+	public static void contieneMayuscula(String password) throws Exception {
+		for (int i = 0; i < password.length(); i++) {
+			char c = password.charAt(i);
+			for (int j = 0; j < alphabetUpper.length; j++) {
+				if (c == alphabetUpper[j]) {
+					return;
+				}
 			}
 		}
-		return true;
+		throw new Exception("La clave debe contener al menos una mayúscula.");
+
 	}
 
-	public static boolean contieneMinuscula(int currentIndex, int lastIndex, String password) throws Exception {
-		for (int i = 0; i < alphabetLower.length; i++) {
-			currentIndex = i;
-			lastIndex = (alphabetLower.length - 1);
-
-			if (!password.contains(alphabetLower[i]) && currentIndex < lastIndex) {
-				continue;
-			} else {
-				throw new Exception("La clave debe tener al menos una letra minúscula");
+	public static void contieneMinuscula(String password) throws Exception {
+		for (int i = 0; i < password.length(); i++) {
+			char c = password.charAt(i);
+			for (int j = 0; j < alphabetLower.length; j++) {
+				if (c == alphabetLower[j]) {
+					return;
+				}
 			}
 		}
-
-		return true;
+		throw new Exception("La clave debe contener al menos una minúscula.");
 	}
 
-	public static boolean contieneCaracterEspecial(int currentIndex, int lastIndex, String password) throws Exception {
-		for (int i = 0; i < specialChars.length; i++) {
-			currentIndex = i;
-			lastIndex = (specialChars.length - 1);
+	public static void contieneCaracterEspecial(String password) throws Exception {
 
-			if (!password.contains(specialChars[i]) && currentIndex < lastIndex) {
-				continue;
-			} else {
-				throw new Exception("La clave debe de tener al menos un caracter especial");
+		for (int i = 0; i < password.length(); i++) {
+			char c = password.charAt(i);
+			for (int j = 0; j < specialChars.length; j++) {
+				if (c == specialChars[j]) {
+					return;
+				}
+
 			}
 		}
+		throw new Exception("La clave debe tener al menos un caracter especial.");
 
-		return true;
+	}
+
+	public static void contieneUnNumero(String password) throws Exception {
+		for (int i = 0; i < password.length(); i++) {
+			char c = password.charAt(i);
+			for (int j = 0; j < numeros.length; j++) {
+				if (c == numeros[j]) {
+					return;
+				}
+			}
+		}
+		throw new Exception("La clave debe contener al menos un número.");
 	}
 
 	public static String showUser(User user) {

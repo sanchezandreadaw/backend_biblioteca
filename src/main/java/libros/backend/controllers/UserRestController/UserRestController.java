@@ -40,7 +40,8 @@ public class UserRestController {
             @RequestParam("DNI") String DNI,
             @RequestParam("clave") String clave,
             @RequestParam("telefono") String telefono,
-            @RequestParam("correo") String correo, @RequestParam("estado_usuario") EstadoUsuario estadoUsuario,
+            @RequestParam("correo") String correo,
+            @RequestParam("estado_usuario") EstadoUsuario estadoUsuario,
             @RequestParam("tipo_usuario") TipoUsuario tipoUsuario,
             @RequestParam(value = "fecha_fin_penalizacion", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fecha_fin_penalizacion,
             @RequestParam(value = "libros", required = false) List<Libro> libros) {
