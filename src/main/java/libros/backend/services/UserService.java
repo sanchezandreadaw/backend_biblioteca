@@ -5,7 +5,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
+
 import libros.backend.helpers.UserHelper;
 import libros.backend.models.EstadoLibro;
 import libros.backend.models.EstadoUsuario;
@@ -24,19 +26,26 @@ public class UserService {
     @Autowired
     private LibroRepository libroRepository;
 
-    public User createUser(String nombre, String apellidos, String DNI, String telefono, String correo,
+    @Autowired
+    private BCryptPasswordEncoder passwordEncoder;
+
+    public User createUser(String nombre, String apellidos, String DNI, String clave, String telefono, String correo,
             EstadoUsuario estado_usuario, TipoUsuario tipoUsuario, LocalDate fecha_fin_penalizacion,
             List<Libro> libros) throws Exception {
 
-        if (UserHelper.isValidUser(nombre, apellidos, DNI, telefono, correo)
-                && !UserHelper.verifyDNI(DNI, userRepository.findAll(), "no")
-                && !UserHelper.verifyEmail(correo, userRepository.findAll(), "no")
-                && !UserHelper.verifyPhone(telefono, userRepository.findAll(), "no")) {
+        try {
+
+            UserHelper.isValidUser(nombre, apellidos, DNI, telefono, correo);
+            UserHelper.verifyDNI(DNI, userRepository.findAll(), "no");
+            UserHelper.verifyEmail(correo, userRepository.findAll(), "no");
+            UserHelper.verifyPhone(telefono, userRepository.findAll(), "no");
+            UserHelper.isValidPassword(clave);
 
             User user = new User();
             user.setNombre(nombre);
             user.setApellidos(apellidos);
             user.setDNI(DNI);
+            user.setClave(passwordEncoder.encode(clave));
             user.setCorreo(correo);
             user.setTelefono(telefono);
             user.setEstado_usuario(estado_usuario);
@@ -46,9 +55,8 @@ public class UserService {
             userRepository.save(user);
             return user;
 
-        } else {
-            System.out.println("Error al guardar el usuario.");
-            throw new Exception("Error al guardar el usuario. Los datos no son válidos.");
+        } catch (Exception excetpion) {
+            throw new Exception(excetpion.getMessage());
         }
 
     }
@@ -105,6 +113,17 @@ public class UserService {
         userRepository.delete(usuario);
         return usuario;
 
+    }
+
+    public User autenticarUsuario(String DNI, String clave) throws Exception {
+        User usuario = userRepository.findByDNI(DNI.toLowerCase().trim());
+        if (usuario == null) {
+            throw new Exception("El usuario con DNI " + DNI + " no existe");
+        }
+        if (!passwordEncoder.matches(clave, usuario.getClave())) {
+            throw new Exception("Usuario o contraseña incorrectos");
+        }
+        return usuario;
     }
 
     public Libro pedirLibro(String titulo, String DNI) throws Exception {

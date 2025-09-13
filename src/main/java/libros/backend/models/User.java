@@ -38,6 +38,9 @@ public class User {
     private String DNI;
 
     @NonNull
+    private String clave;
+
+    @NonNull
     @Column(unique = true)
     private String telefono;
 
