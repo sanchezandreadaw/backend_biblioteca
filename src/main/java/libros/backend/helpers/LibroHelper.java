@@ -49,12 +49,11 @@ public class LibroHelper {
         return sb.toString();
     }
 
-    public static String showLibros(List<Libro> libros) {
+    public static String showLibros(List<Libro> libros) throws Exception {
 
         StringBuilder sb = new StringBuilder();
         if (libros.size() == 0) {
-            sb.append("No existen libros en la base de datos.");
-            return sb.toString();
+            throw new Exception("No existen libros en la base de datos");
         } else {
             for (Libro libro : libros) {
                 sb.append(muestraDatosLibro(libro));
