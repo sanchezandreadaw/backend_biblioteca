@@ -61,6 +61,21 @@ public class UserRestController {
 
     }
 
+    @PostMapping("/login_user")
+    public ResponseEntity<?> login_user(@RequestParam("dni") String dni, @RequestParam("clave") String clave) {
+        try {
+            User usuario = userService.findByDNI(dni);
+            userService.autenticarUsuario(dni, clave);
+            return ResponseEntity
+                    .status(HttpStatus.ACCEPTED)
+                    .body(usuario.getId());
+        } catch (Exception exception) {
+            return ResponseEntity
+                    .status(HttpStatus.BAD_REQUEST)
+                    .body(exception.getMessage());
+        }
+    }
+
     @PostMapping("/alta_cliente")
     public ResponseEntity<String> alta_cliente(@RequestParam("nombre") String nombre,
             @RequestParam("apellidos") String apellidos,
