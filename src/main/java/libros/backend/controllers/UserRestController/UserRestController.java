@@ -65,6 +65,7 @@ public class UserRestController {
     public ResponseEntity<String> updateUser(@RequestParam("nombre") String nombre,
             @RequestParam("apellidos") String apellidos,
             @RequestParam("DNI") String DNI,
+            @RequestParam("clave") String clave,
             @RequestParam("correo") String correo,
             @RequestParam("telefono") String telefono,
             @RequestParam("estado_usuario") EstadoUsuario estado_usuario,
@@ -73,7 +74,7 @@ public class UserRestController {
             @RequestParam(value = "libros", required = false) List<Libro> libros,
             @RequestParam("id") Long id) {
         try {
-            User updated = userService.update(nombre, apellidos, DNI, correo, telefono, estado_usuario,
+            User updated = userService.update(nombre, apellidos, DNI, clave, correo, telefono, estado_usuario,
                     tipo_usuario, fecha_fin_penalizacion, libros, id);
             return ResponseEntity
                     .status(HttpStatus.ACCEPTED)
@@ -96,6 +97,20 @@ public class UserRestController {
             return ResponseEntity
                     .status(HttpStatus.BAD_REQUEST)
                     .body("Error al eliminar el usuario: " + exception.getMessage());
+        }
+    }
+
+    @GetMapping("/getLibrosUser")
+    public ResponseEntity<String> getLibrosUser(@RequestParam("id") Long id) {
+        try {
+            User usuario = userService.findById(id);
+            return ResponseEntity
+                    .status(HttpStatus.ACCEPTED)
+                    .body(UserHelper.muestraLibrosUsuario(usuario));
+        } catch (Exception exception) {
+            return ResponseEntity
+                    .status(HttpStatus.BAD_REQUEST)
+                    .body("Error al obtener los libros del usuario: " + exception.getMessage());
         }
     }
 

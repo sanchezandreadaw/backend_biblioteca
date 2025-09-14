@@ -178,4 +178,20 @@ public class UserHelper {
 		return sb.toString();
 	}
 
+	public static String muestraLibrosUsuario(User usuario) throws Exception {
+		if (usuario.getLibros().size() == 0) {
+			throw new Exception("El usuario: " + usuario.getNombre() + " " + usuario.getApellidos()
+					+ " no ha realizado aún ningún préstamo");
+		}
+		StringBuilder sb = new StringBuilder();
+		for (Libro libro : usuario.getLibros()) {
+			sb.append("Libros prestados a " + usuario.getNombre() + " " + usuario.getApellidos() + "\n");
+			sb.append("Título: " + libro.getTitulo() + "\n");
+			sb.append("Autor: " + libro.getAutor() + "\n");
+			sb.append("Fecha de préstamo: " + libro.getFecha_prestamo() + "\n");
+			sb.append("Fecha máxima de devolución: " + libro.getFecha_max_devolucion() + "\n");
+		}
+		return sb.toString();
+	}
+
 }

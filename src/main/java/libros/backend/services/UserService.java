@@ -42,17 +42,8 @@ public class UserService {
             UserHelper.isValidPassword(clave);
 
             User user = new User();
-            user.setNombre(nombre);
-            user.setApellidos(apellidos);
-            user.setDNI(DNI);
-            user.setClave(passwordEncoder.encode(clave));
-            user.setCorreo(correo);
-            user.setTelefono(telefono);
-            user.setEstado_usuario(estado_usuario);
-            user.setTipoUsuario(tipoUsuario);
-            user.setFecha_fin_penalizacion(fecha_fin_penalizacion);
-            user.setLibros(libros);
-            userRepository.save(user);
+            estableceValoresAlUsuario(user, nombre, apellidos, DNI, clave, correo, telefono, estado_usuario,
+                    tipoUsuario, fecha_fin_penalizacion, libros);
             return user;
 
         } catch (Exception excetpion) {
@@ -79,31 +70,44 @@ public class UserService {
                 .orElseThrow(() -> new Exception("El usuario con id: " + id + " no existe"));
     }
 
-    public User update(String nombre, String apellidos, String DNI, String correo, String telefono,
+    public User update(String nombre, String apellidos, String DNI, String clave, String correo, String telefono,
             EstadoUsuario estadoUsuario, TipoUsuario tipoUsuario, LocalDate fecha_fin_penalizacion,
             List<Libro> libros, Long id) throws Exception {
 
-        User user = userRepository.findById(id)
-                .orElseThrow(() -> new Exception("El usuario con ID " + id + " no existe"));
+        try {
+            User user = userRepository.findById(id)
+                    .orElseThrow(() -> new Exception("El usuario con id: " + id + " no existe."));
+            UserHelper.isValidUser(nombre, apellidos, DNI, telefono, correo);
+            UserHelper.verifyDNI(DNI, userRepository.findAll(), "yes");
+            UserHelper.verifyEmail(correo, userRepository.findAll(), "yes");
+            UserHelper.verifyPhone(telefono, userRepository.findAll(), "yes");
+            UserHelper.isValidPassword(clave);
 
-        if (!UserHelper.isValidUser(nombre, apellidos, DNI, telefono, correo) ||
-                UserHelper.verifyDNI(DNI, userRepository.findAll(), "yes") ||
-                UserHelper.verifyPhone(telefono, userRepository.findAll(), "yes") ||
-                UserHelper.verifyEmail(correo, userRepository.findAll(), "yes")) {
-            throw new Exception("Los valores introducidos no son correctos");
+            estableceValoresAlUsuario(user, nombre, apellidos, DNI, clave, correo, telefono, estadoUsuario,
+                    tipoUsuario, fecha_fin_penalizacion, libros);
+            return user;
+
+        } catch (Exception excetpion) {
+            throw new Exception(excetpion.getMessage());
         }
+
+    }
+
+    public void estableceValoresAlUsuario(User user, String nombre, String apellidos, String DNI, String clave,
+            String correo,
+            String telefono, EstadoUsuario estadoUsuario, TipoUsuario tipoUsuario, LocalDate fecha_fin_penalizacion,
+            List<Libro> libros) throws Exception {
 
         user.setNombre(nombre);
         user.setApellidos(apellidos);
         user.setDNI(DNI);
+        user.setClave(passwordEncoder.encode(clave));
         user.setCorreo(correo);
         user.setTelefono(telefono);
         user.setEstado_usuario(estadoUsuario);
         user.setTipoUsuario(tipoUsuario);
         user.setFecha_fin_penalizacion(fecha_fin_penalizacion);
         user.setLibros(libros);
-
-        return userRepository.save(user);
     }
 
     public User deleteUser(Long id) throws Exception {
@@ -126,11 +130,24 @@ public class UserService {
         return usuario;
     }
 
+    public List<Libro> getLibrosUser(Long id) throws Exception {
+        User usuario = userRepository.findById(id)
+                .orElseThrow(() -> new Exception("El usuario con ID " + id + " no existe"));
+
+        if (usuario.getLibros() == null) {
+            throw new Exception("No existen libros para el usuario con id: " + id);
+        }
+        return usuario.getLibros();
+    }
+
     public Libro pedirLibro(String titulo, String DNI) throws Exception {
-        User usuario = userRepository.findByDNI(DNI.trim().toLowerCase());
-        Libro libro = libroRepository.findByTitulo(titulo.toLowerCase().trim());
 
         try {
+            User usuario = userRepository.findByDNI(DNI.trim().toLowerCase());
+            Libro libro = libroRepository.findByTitulo(titulo.toLowerCase().trim());
+
+            verifyIfExistBookAndUser(usuario, libro, DNI, titulo);
+
             if (libro.getFecha_max_devolucion() != null) {
                 isFechaMaxDevolucion(libro.getFecha_max_devolucion(), usuario);
             }
@@ -150,6 +167,8 @@ public class UserService {
         try {
             User usuario = userRepository.findByDNI(DNI.toLowerCase().trim());
             Libro libro = libroRepository.findByTitulo(titulo.toLowerCase().trim());
+
+            verifyIfExistBookAndUser(usuario, libro, DNI, titulo);
             libro.setFecha_devolucion(LocalDate.now());
 
             if (seraPenalizado(libro, usuario)) {
@@ -166,6 +185,16 @@ public class UserService {
 
         } catch (Exception exception) {
             throw new Exception(exception.getMessage());
+        }
+    }
+
+    public void verifyIfExistBookAndUser(User usuario, Libro libro, String DNI, String titulo) throws Exception {
+
+        if (usuario == null) {
+            throw new Exception("El usuario con DNI " + DNI + " no existe");
+        }
+        if (libro == null) {
+            throw new Exception("El libro con título: " + titulo + " no existe");
         }
     }
 
@@ -201,13 +230,13 @@ public class UserService {
         }
     }
 
-    public void isPenalizedUser(User usuario) throws Exception {
+    public void isPenalizedUser(User user) throws Exception {
 
-        if (usuario.getEstado_usuario().equals(EstadoUsuario.PENALIZADO)) {
+        if (user.getEstado_usuario().equals(EstadoUsuario.PENALIZADO)) {
             StringBuilder sb = new StringBuilder();
-            if (usuario.getFecha_fin_penalizacion() != null) {
+            if (user.getFecha_fin_penalizacion() != null) {
                 sb.append("No puedes pedir ningún libro porque estás penalizado hasta el día: "
-                        + usuario.getFecha_fin_penalizacion());
+                        + user.getFecha_fin_penalizacion());
                 throw new Exception(sb.toString());
             }
         }
