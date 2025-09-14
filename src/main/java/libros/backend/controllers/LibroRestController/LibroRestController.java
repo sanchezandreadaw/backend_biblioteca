@@ -115,17 +115,24 @@ public class LibroRestController {
                     .body("El libro: " + libro.getTitulo() + " se ha eliminado correctamente de la base de datos.");
         } catch (Exception exception) {
             return ResponseEntity
-                    .status(HttpStatus.ACCEPTED)
+                    .status(HttpStatus.BAD_REQUEST)
                     .body("Error al eliminar el libro: " + exception.getMessage());
         }
     }
 
     @GetMapping("/getAll")
-    public ResponseEntity<String> getAll() {
-        List<Libro> libros = libroService.findAll();
-        return ResponseEntity
-                .status(HttpStatus.ACCEPTED)
-                .body(LibroHelper.showLibros(libros));
+    public ResponseEntity<String> getAll() throws Exception {
+        try {
+
+            List<Libro> libros = libroService.findAll();
+            return ResponseEntity
+                    .status(HttpStatus.ACCEPTED)
+                    .body(LibroHelper.showLibros(libros));
+        } catch (Exception exception) {
+            return ResponseEntity
+                    .status(HttpStatus.BAD_REQUEST)
+                    .body("Error al obtener los libros: " + exception.getMessage());
+        }
     }
 
     @GetMapping("/findById")
