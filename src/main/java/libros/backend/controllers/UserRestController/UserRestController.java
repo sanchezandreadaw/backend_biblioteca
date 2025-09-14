@@ -61,6 +61,27 @@ public class UserRestController {
 
     }
 
+    @PostMapping("/alta_cliente")
+    public ResponseEntity<String> alta_cliente(@RequestParam("nombre") String nombre,
+            @RequestParam("apellidos") String apellidos,
+            @RequestParam("DNI") String DNI,
+            @RequestParam("clave") String clave,
+            @RequestParam("telefono") String telefono,
+            @RequestParam("correo") String correo) {
+
+        try {
+            userService.altaCliente(nombre, apellidos, DNI, clave, telefono, correo);
+            User user = userService.findByDNI(DNI);
+            return ResponseEntity
+                    .status(HttpStatus.ACCEPTED)
+                    .body(UserHelper.muestraMensajeDeBienvenida(user));
+        } catch (Exception exception) {
+            return ResponseEntity
+                    .status(HttpStatus.BAD_REQUEST)
+                    .body(exception.getMessage());
+        }
+    }
+
     @PutMapping("/update_user")
     public ResponseEntity<String> updateUser(@RequestParam("nombre") String nombre,
             @RequestParam("apellidos") String apellidos,

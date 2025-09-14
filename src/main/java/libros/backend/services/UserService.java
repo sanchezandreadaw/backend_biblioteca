@@ -44,12 +44,43 @@ public class UserService {
             User user = new User();
             estableceValoresAlUsuario(user, nombre, apellidos, DNI, clave, correo, telefono, estado_usuario,
                     tipoUsuario, fecha_fin_penalizacion, libros);
-            return user;
+            return userRepository.save(user);
 
         } catch (Exception excetpion) {
             throw new Exception(excetpion.getMessage());
         }
 
+    }
+
+    public User altaCliente(String nombre, String apellidos, String DNI, String clave, String telefono, String correo)
+            throws Exception {
+        try {
+            UserHelper.isValidUser(nombre, apellidos, DNI, telefono, correo);
+            UserHelper.verifyDNI(DNI, userRepository.findAll(), "no");
+            UserHelper.verifyEmail(correo, userRepository.findAll(), "no");
+            UserHelper.verifyPhone(telefono, userRepository.findAll(), "no");
+            UserHelper.isValidPassword(clave);
+
+            User user = new User();
+            establecerValoresCliente(user, nombre, apellidos, DNI, clave, telefono, correo);
+            userRepository.save(user);
+            return user;
+
+        } catch (Exception exception) {
+            throw new Exception(exception.getMessage());
+        }
+    }
+
+    public void establecerValoresCliente(User user, String nombre, String apellidos, String DNI, String clave,
+            String telefono, String correo) {
+        user.setNombre(nombre);
+        user.setApellidos(apellidos);
+        user.setDNI(DNI);
+        user.setClave(passwordEncoder.encode(clave));
+        user.setTelefono(telefono);
+        user.setCorreo(correo);
+        user.setEstado_usuario(EstadoUsuario.SIN_PENALIZAR);
+        user.setTipoUsuario(TipoUsuario.CLIENTE);
     }
 
     public List<User> findAll() {

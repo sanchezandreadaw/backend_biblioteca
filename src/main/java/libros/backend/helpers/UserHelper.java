@@ -194,4 +194,21 @@ public class UserHelper {
 		return sb.toString();
 	}
 
+	public static String muestraMensajeDeBienvenida(User usuario) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("Te has dado de alta correctamente. ¡Gracias por confiar en nosotros!" + "\n");
+		sb.append("\n");
+		sb.append("A partir de este momento puedes empezar a pedir libros prestados." + "\n");
+		sb.append("\n");
+		sb.append("=================================================================" + "\n");
+		sb.append("Tus datos: " + "\n");
+		sb.append("Nombre: " + usuario.getNombre() + "\n");
+		sb.append("Apellidos: " + usuario.getApellidos() + "\n");
+		sb.append("DNI: " + usuario.getDNI() + "\n");
+		sb.append("Correo: " + usuario.getCorreo() + "\n");
+		sb.append("Teléfono: " + usuario.getTelefono() + "\n");
+		sb.append("=================================================================" + "\n");
+		return sb.toString();
+	}
+
 }
