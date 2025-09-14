@@ -11,10 +11,15 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import libros.backend.dto.CambiarClave;
+import libros.backend.dto.LoginRequest;
+import libros.backend.dto.LoginResponse;
+import libros.backend.dto.PedirDevolverLibro;
 import libros.backend.helpers.FechaFormat;
 import libros.backend.helpers.UserHelper;
 import libros.backend.models.EstadoUsuario;
@@ -62,13 +67,17 @@ public class UserRestController {
     }
 
     @PostMapping("/login_user")
-    public ResponseEntity<?> login_user(@RequestParam("dni") String dni, @RequestParam("clave") String clave) {
+    public ResponseEntity<?> login_user(@RequestBody LoginRequest loginRequest) {
         try {
-            User usuario = userService.findByDNI(dni);
-            userService.autenticarUsuario(dni, clave);
+            User usuario = userService.findByDNI(loginRequest.getDNI());
+            userService.autenticarUsuario(loginRequest.getDNI(), loginRequest.getClave());
+
+            LoginResponse response = new LoginResponse(usuario.getId(), usuario.getNombre());
+
             return ResponseEntity
                     .status(HttpStatus.ACCEPTED)
-                    .body(usuario.getId());
+                    .body(response);
+
         } catch (Exception exception) {
             return ResponseEntity
                     .status(HttpStatus.BAD_REQUEST)
@@ -240,11 +249,25 @@ public class UserRestController {
         }
     }
 
-    @PutMapping("/pedir_libro")
-    public ResponseEntity<String> pedirLibro(@RequestParam("titulo") String titulo, @RequestParam("dni") String DNI) {
+    @PutMapping("/cambiar_clave")
+    public ResponseEntity<String> cambiarClave(@RequestBody CambiarClave cambiarClave) {
         try {
-            Libro libro = libroService.findByTitulo(titulo.toLowerCase().trim());
-            userService.pedirLibro(titulo, DNI);
+            userService.cambiarClave(cambiarClave.getIdUsuario(), cambiarClave.getNuevaClave());
+            return ResponseEntity
+                    .status(HttpStatus.ACCEPTED)
+                    .body("La clave se ha cambiado correctamente");
+        } catch (Exception exception) {
+            return ResponseEntity
+                    .status(HttpStatus.BAD_REQUEST)
+                    .body("Error: " + exception.getMessage());
+        }
+    }
+
+    @PutMapping("/pedir_libro")
+    public ResponseEntity<String> pedirLibro(@RequestBody PedirDevolverLibro pedirDevolverLibro) {
+        try {
+            Libro libro = libroService.findByTitulo(pedirDevolverLibro.getTitulo());
+            userService.pedirLibro(pedirDevolverLibro.getTitulo(), pedirDevolverLibro.getDNI());
 
             StringBuilder sb = new StringBuilder();
             String fecha = libro.getFecha_max_devolucion().format(FechaFormat.foramto_fecha);
@@ -265,11 +288,10 @@ public class UserRestController {
     }
 
     @PutMapping("/devolver_libro")
-    public ResponseEntity<String> devolverLibro(@RequestParam("titulo") String titulo,
-            @RequestParam("dni") String DNI) {
+    public ResponseEntity<String> devolverLibro(@RequestBody PedirDevolverLibro pedirDevolverLibro) {
         try {
-            Libro libro = libroService.findByTitulo(titulo.trim().toLowerCase());
-            userService.devolverLibro(titulo, DNI);
+            Libro libro = libroService.findByTitulo(pedirDevolverLibro.getTitulo());
+            userService.devolverLibro(pedirDevolverLibro.getTitulo(), pedirDevolverLibro.getDNI());
             return ResponseEntity
                     .status(HttpStatus.ACCEPTED)
                     .body("El libro: " + libro.getTitulo() + " se ha devuelto correctamente");

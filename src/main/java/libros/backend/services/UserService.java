@@ -124,6 +124,17 @@ public class UserService {
 
     }
 
+    public void cambiarClave(Long id_usuario, String nuevaClave) throws Exception {
+        try {
+            User usuario = userRepository.findById(id_usuario)
+                    .orElseThrow(() -> new Exception("El usuario con id " + id_usuario + " no existe"));
+            UserHelper.isValidPassword(nuevaClave);
+            usuario.setClave(passwordEncoder.encode(nuevaClave));
+        } catch (Exception exception) {
+            throw new Exception(exception.getMessage());
+        }
+    }
+
     public void estableceValoresAlUsuario(User user, String nombre, String apellidos, String DNI, String clave,
             String correo,
             String telefono, EstadoUsuario estadoUsuario, TipoUsuario tipoUsuario, LocalDate fecha_fin_penalizacion,
