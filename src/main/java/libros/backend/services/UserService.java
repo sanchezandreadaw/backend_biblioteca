@@ -130,6 +130,7 @@ public class UserService {
                     .orElseThrow(() -> new Exception("El usuario con id " + id_usuario + " no existe"));
             UserHelper.isValidPassword(nuevaClave);
             usuario.setClave(passwordEncoder.encode(nuevaClave));
+            userRepository.save(usuario);
         } catch (Exception exception) {
             throw new Exception(exception.getMessage());
         }
