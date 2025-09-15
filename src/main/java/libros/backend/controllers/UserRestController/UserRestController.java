@@ -3,6 +3,7 @@ package libros.backend.controllers.UserRestController;
 import java.time.LocalDate;
 import java.util.List;
 
+import org.apache.tomcat.util.json.JSONParser;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
@@ -265,12 +266,12 @@ public class UserRestController {
     @PutMapping("/pedir_libro")
     public ResponseEntity<?> pedirLibro(@RequestBody PedirDevolverLibro pedirDevolverLibro) {
         try {
-            Libro libro = libroService.findByTitulo(pedirDevolverLibro.getTitulo());
-            userService.pedirLibro(pedirDevolverLibro.getTitulo(), pedirDevolverLibro.getDNI());
+            libroService.findByTitulo(pedirDevolverLibro.getTitulo());
+            userService.pedirLibro(pedirDevolverLibro.getTitulo(), pedirDevolverLibro.getId());
 
             return ResponseEntity
                     .status(HttpStatus.ACCEPTED)
-                    .body(libro);
+                    .body("Libro adquirido correctamente");
         } catch (Exception exception) {
             return ResponseEntity
                     .status(HttpStatus.BAD_REQUEST)
@@ -282,11 +283,16 @@ public class UserRestController {
     public ResponseEntity<String> devolverLibro(@RequestBody PedirDevolverLibro pedirDevolverLibro) {
         try {
             Libro libro = libroService.findByTitulo(pedirDevolverLibro.getTitulo());
-            userService.devolverLibro(pedirDevolverLibro.getTitulo(), pedirDevolverLibro.getDNI());
+            userService.devolverLibro(pedirDevolverLibro.getTitulo(), pedirDevolverLibro.getId());
             return ResponseEntity
                     .status(HttpStatus.ACCEPTED)
                     .body("El libro: " + libro.getTitulo() + " se ha devuelto correctamente");
         } catch (Exception exception) {
+            if (exception.getMessage().startsWith("Plazo")) {
+                return ResponseEntity
+                        .status(HttpStatus.OK)
+                        .body(exception.getMessage());
+            }
             return ResponseEntity
                     .status(HttpStatus.BAD_REQUEST)
                     .body(exception.getMessage());

@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import libros.backend.helpers.FechaFormat;
 import libros.backend.helpers.UserHelper;
 import libros.backend.models.EstadoLibro;
 import libros.backend.models.EstadoUsuario;
@@ -183,13 +184,14 @@ public class UserService {
         return usuario.getLibros();
     }
 
-    public Libro pedirLibro(String titulo, String DNI) throws Exception {
+    public Libro pedirLibro(String titulo, Long id) throws Exception {
 
         try {
-            User usuario = userRepository.findByDNI(DNI.trim().toLowerCase());
+            User usuario = userRepository.findById(id)
+                    .orElseThrow(() -> new Exception("El usuario con ID " + id + " no existe"));
             Libro libro = libroRepository.findByTitulo(titulo.toLowerCase().trim());
 
-            verifyIfExistBookAndUser(usuario, libro, DNI, titulo);
+            verifyIfExistBookAndUser(usuario, libro, id, titulo);
             chequearPrestamoAUsuario(libro, usuario);
 
             if (libro.getFecha_max_devolucion() != null) {
@@ -215,23 +217,26 @@ public class UserService {
         }
     }
 
-    public Libro devolverLibro(String titulo, String DNI) throws Exception {
+    public Libro devolverLibro(String titulo, Long id) throws Exception {
 
         try {
-            User usuario = userRepository.findByDNI(DNI.toLowerCase().trim());
+            User usuario = userRepository.findById(id)
+                    .orElseThrow(() -> new Exception("El usuario con " + id + " no existe"));
             Libro libro = libroRepository.findByTitulo(titulo.toLowerCase().trim());
 
-            verifyIfExistBookAndUser(usuario, libro, DNI, titulo);
+            verifyIfExistBookAndUser(usuario, libro, id, titulo);
             chequearDevolucion(libro, usuario);
-            libro.setFecha_devolucion(LocalDate.now());
+            libro.setFecha_devolucion(LocalDate.now().plusDays(20));
 
             if (seraPenalizado(libro, usuario)) {
                 usuario.setEstado_usuario(EstadoUsuario.PENALIZADO);
                 usuario.setFecha_fin_penalizacion(LocalDate.now().plusDays(20));
                 actualizarLibroAlDevolver(libro, usuario);
 
-                throw new Exception("Has superado el plazo máximo para devolver el libro y serás penalizado hasta:"
-                        + LocalDate.now().plusDays(20) + "\n" + "La devolución se ha completado correctamente.");
+                String fecha_penalizacion = LocalDate.now().plusDays(20).format(FechaFormat.foramto_fecha);
+
+                throw new Exception("Plazo máximo de devolución superado. Usuario penalizado hasta: "
+                        + fecha_penalizacion + "\n" + "Devolución completada.");
             }
             actualizarLibroAlDevolver(libro, usuario);
 
@@ -255,10 +260,10 @@ public class UserService {
         }
     }
 
-    public void verifyIfExistBookAndUser(User usuario, Libro libro, String DNI, String titulo) throws Exception {
+    public void verifyIfExistBookAndUser(User usuario, Libro libro, Long id, String titulo) throws Exception {
 
         if (usuario == null) {
-            throw new Exception("El usuario con DNI " + DNI + " no existe");
+            throw new Exception("El usuario con id " + id + " no existe");
         }
         if (libro == null) {
             throw new Exception("El libro con título: " + titulo + " no existe");
