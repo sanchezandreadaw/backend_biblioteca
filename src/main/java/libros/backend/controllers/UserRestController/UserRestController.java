@@ -2,8 +2,6 @@ package libros.backend.controllers.UserRestController;
 
 import java.time.LocalDate;
 import java.util.List;
-
-import org.apache.tomcat.util.json.JSONParser;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;

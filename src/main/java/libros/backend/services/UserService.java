@@ -193,6 +193,7 @@ public class UserService {
 
             verifyIfExistBookAndUser(usuario, libro, id, titulo);
             chequearPrestamoAUsuario(libro, usuario);
+            checkNumberOfBooks(usuario);
 
             if (libro.getFecha_max_devolucion() != null) {
                 isFechaMaxDevolucion(libro.getFecha_max_devolucion(), usuario);
@@ -205,6 +206,15 @@ public class UserService {
 
         } catch (Exception exception) {
             throw new Exception(exception.getMessage());
+        }
+    }
+
+    public void checkNumberOfBooks(User usuario) throws Exception {
+        if (usuario != null) {
+            int maxLibros = 5;
+            if (usuario.getLibros().size() == maxLibros) {
+                throw new Exception("No puedes pedir prestados más de " + maxLibros + " libros");
+            }
         }
     }
 
@@ -226,7 +236,7 @@ public class UserService {
 
             verifyIfExistBookAndUser(usuario, libro, id, titulo);
             chequearDevolucion(libro, usuario);
-            libro.setFecha_devolucion(LocalDate.now().plusDays(20));
+            libro.setFecha_devolucion(LocalDate.now());
 
             if (seraPenalizado(libro, usuario)) {
                 usuario.setEstado_usuario(EstadoUsuario.PENALIZADO);
