@@ -190,7 +190,7 @@ public class UserService {
             Libro libro = libroRepository.findByTitulo(titulo.toLowerCase().trim());
 
             verifyIfExistBookAndUser(usuario, libro, DNI, titulo);
-            verificarPropietario(libro, usuario);
+            chequearPrestamoAUsuario(libro, usuario);
 
             if (libro.getFecha_max_devolucion() != null) {
                 isFechaMaxDevolucion(libro.getFecha_max_devolucion(), usuario);
@@ -206,7 +206,7 @@ public class UserService {
         }
     }
 
-    public void verificarPropietario(Libro libro, User usuario) throws Exception {
+    public void chequearPrestamoAUsuario(Libro libro, User usuario) throws Exception {
         if (libro.getUsuario() != null) {
 
             if (libro.getUsuario().equals(usuario)) {
@@ -222,6 +222,7 @@ public class UserService {
             Libro libro = libroRepository.findByTitulo(titulo.toLowerCase().trim());
 
             verifyIfExistBookAndUser(usuario, libro, DNI, titulo);
+            chequearDevolucion(libro, usuario);
             libro.setFecha_devolucion(LocalDate.now());
 
             if (seraPenalizado(libro, usuario)) {
@@ -238,6 +239,19 @@ public class UserService {
 
         } catch (Exception exception) {
             throw new Exception(exception.getMessage());
+        }
+    }
+
+    public void chequearDevolucion(Libro libro, User usuario) throws Exception {
+        if (libro.getFecha_devolucion() == null && libro.getFecha_max_devolucion() == null
+                && libro.getFecha_prestamo() == null) {
+            throw new Exception("No se puede devolver un libro que no está prestado");
+        }
+        if (libro.getUsuario() != null) {
+            if (!libro.getUsuario().equals(usuario)) {
+                throw new Exception(
+                        "No puedes devolver el libro: " + libro.getTitulo() + " porque no lo tienes en préstamo");
+            }
         }
     }
 

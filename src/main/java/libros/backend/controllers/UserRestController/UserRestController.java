@@ -71,7 +71,7 @@ public class UserRestController {
             User usuario = userService.findByDNI(loginRequest.getDNI());
             userService.autenticarUsuario(loginRequest.getDNI(), loginRequest.getClave());
 
-            LoginResponse response = new LoginResponse(usuario.getId(), usuario.getNombre());
+            LoginResponse response = new LoginResponse(usuario.getId(), usuario.getNombre(), usuario.getDNI());
 
             return ResponseEntity
                     .status(HttpStatus.ACCEPTED)
@@ -274,7 +274,7 @@ public class UserRestController {
         } catch (Exception exception) {
             return ResponseEntity
                     .status(HttpStatus.BAD_REQUEST)
-                    .body("Error: " + exception.getMessage());
+                    .body(exception.getMessage());
         }
     }
 
