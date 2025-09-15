@@ -1,6 +1,7 @@
 package libros.backend.controllers.UserRestController;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -18,6 +19,7 @@ import org.springframework.web.bind.annotation.RestController;
 import libros.backend.dto.CambiarClave;
 import libros.backend.dto.LoginRequest;
 import libros.backend.dto.LoginResponse;
+import libros.backend.dto.MisLibrosReponse;
 import libros.backend.dto.PedirDevolverLibro;
 import libros.backend.helpers.UserHelper;
 import libros.backend.models.EstadoUsuario;
@@ -144,12 +146,25 @@ public class UserRestController {
     }
 
     @GetMapping("/getLibrosUser")
-    public ResponseEntity<String> getLibrosUser(@RequestParam("id") Long id) {
+    public ResponseEntity<?> getLibrosUser(@RequestParam("id") Long id) {
         try {
             User usuario = userService.findById(id);
+            List<Libro> libros_usuario = usuario.getLibros();
+
+            List<MisLibrosReponse> responseList = new ArrayList<>();
+
+            for (Libro libro : libros_usuario) {
+                responseList.add(new MisLibrosReponse(
+                        libro.getTitulo(),
+                        libro.getAutor(),
+                        libro.getFecha_publicacion(),
+                        libro.getFecha_prestamo(),
+                        libro.getFecha_max_devolucion()));
+            }
             return ResponseEntity
                     .status(HttpStatus.ACCEPTED)
-                    .body(UserHelper.muestraLibrosUsuario(usuario));
+                    .body(responseList);
+
         } catch (Exception exception) {
             return ResponseEntity
                     .status(HttpStatus.BAD_REQUEST)
