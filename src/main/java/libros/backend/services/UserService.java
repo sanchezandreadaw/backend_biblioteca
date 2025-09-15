@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import libros.backend.exception.FechaSuperadaException;
 import libros.backend.helpers.FechaFormat;
 import libros.backend.helpers.UserHelper;
 import libros.backend.models.EstadoLibro;
@@ -187,11 +188,10 @@ public class UserService {
     public Libro pedirLibro(String titulo, Long id) throws Exception {
 
         try {
-            User usuario = userRepository.findById(id)
-                    .orElseThrow(() -> new Exception("El usuario con ID " + id + " no existe"));
             Libro libro = libroRepository.findByTitulo(titulo.toLowerCase().trim());
+            User usuario = userRepository.findById(id).get();
 
-            verifyIfExistBookAndUser(usuario, libro, id, titulo);
+            verifyIfExistBookAndUser(libro, usuario.getId(), titulo);
             chequearPrestamoAUsuario(libro, usuario);
             checkNumberOfBooks(usuario);
 
@@ -227,34 +227,38 @@ public class UserService {
         }
     }
 
-    public Libro devolverLibro(String titulo, Long id) throws Exception {
+    public Libro devolverLibro(String titulo, Long id) throws Exception, FechaSuperadaException {
 
         try {
-            User usuario = userRepository.findById(id)
-                    .orElseThrow(() -> new Exception("El usuario con " + id + " no existe"));
             Libro libro = libroRepository.findByTitulo(titulo.toLowerCase().trim());
+            User usuario = userRepository.findById(id).get();
+            verifyIfExistBookAndUser(libro, usuario.getId(), titulo);
 
-            verifyIfExistBookAndUser(usuario, libro, id, titulo);
             chequearDevolucion(libro, usuario);
+
             libro.setFecha_devolucion(LocalDate.now());
 
             if (seraPenalizado(libro, usuario)) {
+                System.out.println("Penalizando usuario");
                 usuario.setEstado_usuario(EstadoUsuario.PENALIZADO);
                 usuario.setFecha_fin_penalizacion(LocalDate.now().plusDays(20));
                 actualizarLibroAlDevolver(libro, usuario);
 
                 String fecha_penalizacion = LocalDate.now().plusDays(20).format(FechaFormat.foramto_fecha);
-
-                throw new Exception("Plazo máximo de devolución superado. Usuario penalizado hasta: "
+                throw new FechaSuperadaException("Plazo máximo de devolución superado. Usuario penalizado hasta: "
                         + fecha_penalizacion + "\n" + "Devolución completada.");
             }
+            System.out.println("Actualizando libro y usuario");
             actualizarLibroAlDevolver(libro, usuario);
 
             return libro;
 
         } catch (Exception exception) {
+            System.out.println("Mostrando excepción de error " + exception.getMessage());
+            exception.printStackTrace();
             throw new Exception(exception.getMessage());
         }
+
     }
 
     public void chequearDevolucion(Libro libro, User usuario) throws Exception {
@@ -270,9 +274,9 @@ public class UserService {
         }
     }
 
-    public void verifyIfExistBookAndUser(User usuario, Libro libro, Long id, String titulo) throws Exception {
+    public void verifyIfExistBookAndUser(Libro libro, Long id, String titulo) throws Exception {
 
-        if (usuario == null) {
+        if (id == null) {
             throw new Exception("El usuario con id " + id + " no existe");
         }
         if (libro == null) {
@@ -368,13 +372,13 @@ public class UserService {
         if (libros != null) {
             libros = libros.stream().filter((libro_devolver) -> libro_devolver.getId() != libro.getId()).toList();
             usuario.setLibros(libros);
+            libro.setEstado_libro(EstadoLibro.SIN_PRESTAR);
+            libro.setFecha_devolucion(null);
+            libro.setFecha_max_devolucion(null);
+            libro.setFecha_prestamo(null);
+            libroRepository.save(libro);
         }
-        libro.setEstado_libro(EstadoLibro.SIN_PRESTAR);
-        libro.setFecha_devolucion(null);
-        libro.setFecha_max_devolucion(null);
-        libro.setFecha_prestamo(null);
 
-        libroRepository.save(libro);
         userRepository.save(usuario);
     }
 

@@ -3,6 +3,7 @@ package libros.backend.controllers.UserRestController;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
@@ -293,7 +294,7 @@ public class UserRestController {
     }
 
     @PutMapping("/devolver_libro")
-    public ResponseEntity<String> devolverLibro(@RequestBody PedirDevolverLibro pedirDevolverLibro) {
+    public ResponseEntity<?> devolverLibro(@RequestBody PedirDevolverLibro pedirDevolverLibro) {
         try {
             Libro libro = libroService.findByTitulo(pedirDevolverLibro.getTitulo());
             userService.devolverLibro(pedirDevolverLibro.getTitulo(), pedirDevolverLibro.getId());
@@ -301,15 +302,11 @@ public class UserRestController {
                     .status(HttpStatus.ACCEPTED)
                     .body("El libro: " + libro.getTitulo() + " se ha devuelto correctamente");
         } catch (Exception exception) {
-            if (exception.getMessage().startsWith("Plazo")) {
-                return ResponseEntity
-                        .status(HttpStatus.OK)
-                        .body(exception.getMessage());
-            }
             return ResponseEntity
                     .status(HttpStatus.BAD_REQUEST)
                     .body(exception.getMessage());
         }
+
     }
 
 }
