@@ -22,6 +22,7 @@ import libros.backend.dto.LoginRequest;
 import libros.backend.dto.LoginResponse;
 import libros.backend.dto.MisLibrosReponse;
 import libros.backend.dto.PedirDevolverLibro;
+import libros.backend.dto.SancionesResponse;
 import libros.backend.helpers.UserHelper;
 import libros.backend.models.EstadoUsuario;
 import libros.backend.models.Libro;
@@ -192,6 +193,21 @@ public class UserRestController {
                     .body("Se ha producido un error en la búsqueda: " + exception.getMessage());
         }
 
+    }
+
+    @GetMapping("/getSancionesUser")
+    public ResponseEntity<?> getSancionesUsuario(@RequestParam("id") Long id) {
+        try {
+            User usuario = userService.findById(id);
+            SancionesResponse response = new SancionesResponse(usuario.getFecha_fin_penalizacion());
+            return ResponseEntity
+                    .status(HttpStatus.ACCEPTED)
+                    .body(response);
+        } catch (Exception exception) {
+            return ResponseEntity
+                    .status(HttpStatus.ACCEPTED)
+                    .body(exception.getMessage());
+        }
     }
 
     @GetMapping("/getByDNI")
