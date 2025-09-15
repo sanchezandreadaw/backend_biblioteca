@@ -190,6 +190,7 @@ public class UserService {
             Libro libro = libroRepository.findByTitulo(titulo.toLowerCase().trim());
 
             verifyIfExistBookAndUser(usuario, libro, DNI, titulo);
+            verificarPropietario(libro, usuario);
 
             if (libro.getFecha_max_devolucion() != null) {
                 isFechaMaxDevolucion(libro.getFecha_max_devolucion(), usuario);
@@ -202,6 +203,15 @@ public class UserService {
 
         } catch (Exception exception) {
             throw new Exception(exception.getMessage());
+        }
+    }
+
+    public void verificarPropietario(Libro libro, User usuario) throws Exception {
+        if (libro.getUsuario() != null) {
+
+            if (libro.getUsuario().equals(usuario)) {
+                throw new Exception("Actualmente tienes en préstamo este libro");
+            }
         }
     }
 

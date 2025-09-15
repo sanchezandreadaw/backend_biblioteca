@@ -20,7 +20,6 @@ import libros.backend.dto.CambiarClave;
 import libros.backend.dto.LoginRequest;
 import libros.backend.dto.LoginResponse;
 import libros.backend.dto.PedirDevolverLibro;
-import libros.backend.helpers.FechaFormat;
 import libros.backend.helpers.UserHelper;
 import libros.backend.models.EstadoUsuario;
 import libros.backend.models.Libro;
@@ -264,26 +263,18 @@ public class UserRestController {
     }
 
     @PutMapping("/pedir_libro")
-    public ResponseEntity<String> pedirLibro(@RequestBody PedirDevolverLibro pedirDevolverLibro) {
+    public ResponseEntity<?> pedirLibro(@RequestBody PedirDevolverLibro pedirDevolverLibro) {
         try {
             Libro libro = libroService.findByTitulo(pedirDevolverLibro.getTitulo());
             userService.pedirLibro(pedirDevolverLibro.getTitulo(), pedirDevolverLibro.getDNI());
 
-            StringBuilder sb = new StringBuilder();
-            String fecha = libro.getFecha_max_devolucion().format(FechaFormat.foramto_fecha);
-            sb.append("Préstamo realizado correctamente" + "\n");
-            sb.append("Libro prestado: " + libro.getTitulo() + "\n");
-            if (fecha != null) {
-                sb.append("Fecha máxima de devolución: " + fecha);
-            }
-
             return ResponseEntity
                     .status(HttpStatus.ACCEPTED)
-                    .body(sb.toString());
+                    .body(libro);
         } catch (Exception exception) {
             return ResponseEntity
                     .status(HttpStatus.BAD_REQUEST)
-                    .body("Se ha producido un error al pedir el libro: " + exception.getMessage());
+                    .body("Error: " + exception.getMessage());
         }
     }
 
