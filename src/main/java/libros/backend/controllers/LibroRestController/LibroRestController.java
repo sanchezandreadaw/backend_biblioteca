@@ -1,6 +1,7 @@
 package libros.backend.controllers.LibroRestController;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -13,6 +14,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import libros.backend.dto.LibrosDisponiblesReponse;
 import libros.backend.helpers.LibroHelper;
 import libros.backend.models.EstadoLibro;
 import libros.backend.models.Libro;
@@ -133,6 +135,23 @@ public class LibroRestController {
                     .status(HttpStatus.BAD_REQUEST)
                     .body("Error al obtener los libros: " + exception.getMessage());
         }
+    }
+
+    @GetMapping("/getLibrosDisponibles")
+    public ResponseEntity<?> getLibrosDisponibles() {
+        List<Libro> librosDisponibles = libroService.findByEstado();
+
+        List<LibrosDisponiblesReponse> librosResponse = new ArrayList<>();
+        for (Libro libro : librosDisponibles) {
+            librosResponse.add(new LibrosDisponiblesReponse(
+                    libro.getTitulo(),
+                    libro.getAutor(),
+                    libro.getFecha_publicacion()));
+        }
+        return ResponseEntity
+                .status(HttpStatus.ACCEPTED)
+                .body(librosResponse);
+
     }
 
     @GetMapping("/findById")

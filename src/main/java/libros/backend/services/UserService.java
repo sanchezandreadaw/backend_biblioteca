@@ -8,7 +8,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import libros.backend.exception.FechaSuperadaException;
+import libros.backend.exception.Excepciones.DNINoEncontradoException;
+import libros.backend.exception.Excepciones.FechaSuperadaException;
+import libros.backend.exception.Excepciones.IdNoEncontradoException;
+import libros.backend.exception.Excepciones.LibroNoEncontradoException;
+import libros.backend.exception.Excepciones.MaxLibrosPrestadosException;
+import libros.backend.exception.Excepciones.ValoresIncorrectosException;
 import libros.backend.helpers.FechaFormat;
 import libros.backend.helpers.UserHelper;
 import libros.backend.models.EstadoLibro;
@@ -33,7 +38,7 @@ public class UserService {
 
     public User createUser(String nombre, String apellidos, String DNI, String clave, String telefono, String correo,
             EstadoUsuario estado_usuario, TipoUsuario tipoUsuario, LocalDate fecha_fin_penalizacion,
-            List<Libro> libros) throws Exception {
+            List<Libro> libros) throws Exception, IdNoEncontradoException {
 
         try {
 
@@ -89,27 +94,27 @@ public class UserService {
         return userRepository.findAll();
     }
 
-    public User findByDNI(String DNI) throws Exception {
+    public User findByDNI(String DNI) throws DNINoEncontradoException {
         User usuario = userRepository.findByDNI(DNI.toLowerCase().trim());
         if (usuario != null) {
             return usuario;
         } else {
-            throw new Exception("El usuario con DNI: " + DNI + " no existe");
+            throw new DNINoEncontradoException(DNI);
         }
     }
 
-    public User findById(Long id) throws Exception {
+    public User findById(Long id) throws IdNoEncontradoException {
         return userRepository.findById(id)
-                .orElseThrow(() -> new Exception("El usuario con id: " + id + " no existe"));
+                .orElseThrow(() -> new IdNoEncontradoException(id));
     }
 
     public User update(String nombre, String apellidos, String DNI, String clave, String correo, String telefono,
             EstadoUsuario estadoUsuario, TipoUsuario tipoUsuario, LocalDate fecha_fin_penalizacion,
-            List<Libro> libros, Long id) throws Exception {
+            List<Libro> libros, Long id) throws IdNoEncontradoException, Exception {
 
         try {
             User user = userRepository.findById(id)
-                    .orElseThrow(() -> new Exception("El usuario con id: " + id + " no existe."));
+                    .orElseThrow(() -> new IdNoEncontradoException(id));
             UserHelper.isValidUser(nombre, apellidos, DNI, telefono, correo);
             UserHelper.verifyDNI(DNI, userRepository.findAll(), "yes");
             UserHelper.verifyEmail(correo, userRepository.findAll(), "yes");
@@ -126,10 +131,10 @@ public class UserService {
 
     }
 
-    public User cambiarClave(Long id_usuario, String nuevaClave) throws Exception {
+    public User cambiarClave(Long id_usuario, String nuevaClave) throws Exception, IdNoEncontradoException {
         try {
             User usuario = userRepository.findById(id_usuario)
-                    .orElseThrow(() -> new Exception("El usuario con id " + id_usuario + " no existe"));
+                    .orElseThrow(() -> new IdNoEncontradoException(id_usuario));
             UserHelper.isValidPassword(nuevaClave);
             usuario.setClave(passwordEncoder.encode(nuevaClave));
             userRepository.save(usuario);
@@ -142,7 +147,7 @@ public class UserService {
     public void estableceValoresAlUsuario(User user, String nombre, String apellidos, String DNI, String clave,
             String correo,
             String telefono, EstadoUsuario estadoUsuario, TipoUsuario tipoUsuario, LocalDate fecha_fin_penalizacion,
-            List<Libro> libros) throws Exception {
+            List<Libro> libros) throws Exception, IdNoEncontradoException {
 
         user.setNombre(nombre);
         user.setApellidos(apellidos);
@@ -156,29 +161,41 @@ public class UserService {
         user.setLibros(libros);
     }
 
-    public User deleteUser(Long id) throws Exception {
+    public User deleteUser(Long id) throws Exception, IdNoEncontradoException {
         User usuario = userRepository.findById(id)
-                .orElseThrow(() -> new Exception("El usuario con ID: " + id + "no existe"));
+                .orElseThrow(() -> new IdNoEncontradoException(id));
 
         userRepository.delete(usuario);
         return usuario;
 
     }
 
-    public User autenticarUsuario(String DNI, String clave) throws Exception {
+    public User autenticarUsuario(String DNI, String clave)
+            throws DNINoEncontradoException, ValoresIncorrectosException {
         User usuario = userRepository.findByDNI(DNI.toLowerCase().trim());
         if (usuario == null) {
-            throw new Exception("El usuario con DNI " + DNI + " no existe");
+            throw new DNINoEncontradoException(DNI);
         }
         if (!passwordEncoder.matches(clave, usuario.getClave())) {
-            throw new Exception("Usuario o contraseña incorrectos");
+            throw new ValoresIncorrectosException();
         }
         return usuario;
     }
 
-    public List<Libro> getLibrosUser(Long id) throws Exception {
+    public void actualizarClaveOlvidad(String DNI, String nuevaClave) throws DNINoEncontradoException, Exception {
+        User usuario = userRepository.findByDNI(DNI.trim().toLowerCase());
+        if (usuario == null) {
+            throw new DNINoEncontradoException(DNI);
+        }
+
+        UserHelper.isValidPassword(nuevaClave);
+        usuario.setClave(passwordEncoder.encode(nuevaClave));
+        userRepository.save(usuario);
+    }
+
+    public List<Libro> getLibrosUser(Long id) throws IdNoEncontradoException, Exception {
         User usuario = userRepository.findById(id)
-                .orElseThrow(() -> new Exception("El usuario con ID " + id + " no existe"));
+                .orElseThrow(() -> new IdNoEncontradoException(id));
 
         if (usuario.getLibros() == null) {
             throw new Exception("No existen libros para el usuario con id: " + id);
@@ -186,11 +203,12 @@ public class UserService {
         return usuario.getLibros();
     }
 
-    public Libro pedirLibro(String titulo, Long id) throws Exception {
+    public Libro pedirLibro(String titulo, Long id)
+            throws Exception, IdNoEncontradoException, LibroNoEncontradoException {
 
         try {
             Libro libro = libroRepository.findByTitulo(titulo.toLowerCase().trim());
-            User usuario = userRepository.findById(id).get();
+            User usuario = userRepository.findById(id).orElseThrow(() -> new IdNoEncontradoException(id));
 
             verifyIfExistBookAndUser(libro, usuario.getId(), titulo);
             chequearPrestamoAUsuario(libro, usuario);
@@ -210,11 +228,11 @@ public class UserService {
         }
     }
 
-    public void checkNumberOfBooks(User usuario) throws Exception {
+    public void checkNumberOfBooks(User usuario) throws MaxLibrosPrestadosException {
         if (usuario != null) {
             int maxLibros = 5;
             if (usuario.getLibros().size() == maxLibros) {
-                throw new Exception("No puedes pedir prestados más de " + maxLibros + " libros");
+                throw new MaxLibrosPrestadosException();
             }
         }
     }
@@ -245,9 +263,7 @@ public class UserService {
                 usuario.setFecha_fin_penalizacion(LocalDate.now().plusDays(20));
                 actualizarLibroAlDevolver(libro, usuario);
 
-                String fecha_penalizacion = LocalDate.now().plusDays(20).format(FechaFormat.foramto_fecha);
-                throw new FechaSuperadaException("Plazo máximo de devolución superado. Usuario penalizado hasta: "
-                        + fecha_penalizacion + "\n" + "Devolución completada.");
+                throw new FechaSuperadaException(usuario.getFecha_fin_penalizacion());
             }
             System.out.println("Actualizando libro y usuario");
             actualizarLibroAlDevolver(libro, usuario);
@@ -278,10 +294,10 @@ public class UserService {
     public void verifyIfExistBookAndUser(Libro libro, Long id, String titulo) throws Exception {
 
         if (id == null) {
-            throw new Exception("El usuario con id " + id + " no existe");
+            throw new Exception("El usuario no existe.");
         }
         if (libro == null) {
-            throw new Exception("El libro con título: " + titulo + " no existe");
+            throw new Exception("El libro no existe");
         }
     }
 
@@ -296,9 +312,9 @@ public class UserService {
 
     }
 
-    public User despenalizarUsuario(Long id) throws Exception {
+    public User despenalizarUsuario(Long id) throws IdNoEncontradoException {
         User usuario = userRepository.findById(id)
-                .orElseThrow(() -> new Exception("El usuario con id: " + id + " no existe"));
+                .orElseThrow(() -> new IdNoEncontradoException(id));
 
         usuario.setEstado_usuario(EstadoUsuario.SIN_PENALIZAR);
         usuario.setFecha_fin_penalizacion(null);

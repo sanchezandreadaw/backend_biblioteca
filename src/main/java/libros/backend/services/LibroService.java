@@ -5,7 +5,9 @@ import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
+import libros.backend.exception.Excepciones.LibroNoEncontradoException;
+import libros.backend.exception.Excepciones.LibroNoEncontradoISBNException;
+import libros.backend.exception.Excepciones.TituloNoEncontradoException;
 import libros.backend.helpers.LibroHelper;
 import libros.backend.models.EstadoLibro;
 import libros.backend.models.Libro;
@@ -49,30 +51,37 @@ public class LibroService {
         return libroRepository.findAll();
     }
 
-    public Libro findByISBN(String ISBN) throws Exception {
+    public List<Libro> findByEstado() {
+        List<Libro> libros = libroRepository.findAll().stream()
+                .filter((libro) -> libro.getEstado_libro() == EstadoLibro.SIN_PRESTAR).toList();
+
+        return libros;
+    }
+
+    public Libro findByISBN(String ISBN) throws LibroNoEncontradoISBNException {
 
         Libro libro = libroRepository.findByISBN(ISBN.toLowerCase().trim());
         if (libro == null) {
-            throw new Exception("El libro con ISBN" + ISBN + " no existe");
+            throw new LibroNoEncontradoISBNException(ISBN);
         }
         return libro;
     }
 
-    public Libro findById(Long id) throws Exception {
-        return libroRepository.findById(id).orElseThrow(() -> new Exception("El libro con ID: " + id + " no existe"));
+    public Libro findById(Long id) throws LibroNoEncontradoException {
+        return libroRepository.findById(id).orElseThrow(() -> new LibroNoEncontradoException(id));
     }
 
-    public Libro findByTitulo(String titulo) throws Exception {
+    public Libro findByTitulo(String titulo) throws Exception, TituloNoEncontradoException {
         Libro libro = libroRepository.findByTitulo(titulo.toLowerCase().trim());
         if (libro == null) {
-            throw new Exception("El libro con título: " + titulo + " no existe");
+            throw new TituloNoEncontradoException(titulo);
         }
         return libro;
     }
 
-    public Libro delete(Long id) throws Exception {
+    public Libro delete(Long id) throws LibroNoEncontradoException {
         Libro libro = libroRepository.findById(id)
-                .orElseThrow(() -> new Exception("El libro con ID: " + id + "no existe"));
+                .orElseThrow(() -> new LibroNoEncontradoException(id));
 
         libroRepository.delete(libro);
 
@@ -82,10 +91,10 @@ public class LibroService {
 
     public Libro updateLibro(String titulo, String autor, String ISBN, LocalDate fecha_publicacion,
             LocalDate fecha_prestamo, LocalDate fecha_max_devolucion, LocalDate fecha_devolucion,
-            EstadoLibro estadoLibro, User usuario, Long id_libro) throws Exception {
+            EstadoLibro estadoLibro, User usuario, Long id_libro) throws Exception, LibroNoEncontradoException {
 
         Libro libro = libroRepository.findById(id_libro)
-                .orElseThrow(() -> new Exception("El libro con ID: " + id_libro + "no existe"));
+                .orElseThrow(() -> new LibroNoEncontradoException(id_libro));
 
         try {
             LibroHelper.EsUnLibroValido(titulo, autor, fecha_publicacion);
