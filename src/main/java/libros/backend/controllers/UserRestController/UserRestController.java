@@ -280,9 +280,9 @@ public class UserRestController {
     }
 
     @PutMapping("/cambiar_clave")
-    public ResponseEntity<String> cambiarClave(@RequestBody CambiarClave cambiarClave) {
+    public ResponseEntity<?> cambiarClave(@RequestBody CambiarClave cambiarClave) {
         try {
-            userService.cambiarClave(cambiarClave.getIdUsuario(), cambiarClave.getNuevaClave());
+            userService.cambiarClave(cambiarClave.getId(), cambiarClave.getNuevaClave());
             return ResponseEntity
                     .status(HttpStatus.ACCEPTED)
                     .body("La clave se ha cambiado correctamente");
