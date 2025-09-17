@@ -264,7 +264,6 @@ public class UserService {
 
                 throw new FechaSuperadaException(usuario.getFecha_fin_penalizacion());
             }
-            System.out.println("Actualizando libro y usuario");
             actualizarLibroAlDevolver(libro, usuario);
 
             return libro;

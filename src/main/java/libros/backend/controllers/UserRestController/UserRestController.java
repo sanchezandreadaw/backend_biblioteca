@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import libros.backend.dto.AltaCliente;
 import libros.backend.dto.CambiarClave;
 import libros.backend.dto.ForgotPassword;
 import libros.backend.dto.LoginRequest;
@@ -62,7 +63,6 @@ public class UserRestController {
                     .status(HttpStatus.ACCEPTED)
                     .body("Usuario guardado correctamente");
         } catch (Exception exception) {
-            System.out.println("Se ha producido un error al guardar el usuario: " + exception.getMessage());
             return ResponseEntity
                     .status(HttpStatus.BAD_REQUEST)
                     .body("Se ha producido un error al guardar el usuario: " + exception.getMessage());
@@ -90,19 +90,16 @@ public class UserRestController {
     }
 
     @PostMapping("/alta_cliente")
-    public ResponseEntity<String> alta_cliente(@RequestParam("nombre") String nombre,
-            @RequestParam("apellidos") String apellidos,
-            @RequestParam("DNI") String DNI,
-            @RequestParam("clave") String clave,
-            @RequestParam("telefono") String telefono,
-            @RequestParam("correo") String correo) {
+    public ResponseEntity<?> alta_cliente(@RequestBody AltaCliente altaCliente) {
 
         try {
-            userService.altaCliente(nombre, apellidos, DNI, clave, telefono, correo);
-            User user = userService.findByDNI(DNI);
+            userService.altaCliente(altaCliente.getNombre(), altaCliente.getApellidos(),
+                    altaCliente.getDNI(), altaCliente.getClave(), altaCliente.getTelefono(),
+                    altaCliente.getCorreo());
+
             return ResponseEntity
                     .status(HttpStatus.ACCEPTED)
-                    .body(UserHelper.muestraMensajeDeBienvenida(user));
+                    .body(Map.of("mensaje", "te has dado de alta correctamente"));
         } catch (Exception exception) {
             return ResponseEntity
                     .status(HttpStatus.BAD_REQUEST)
