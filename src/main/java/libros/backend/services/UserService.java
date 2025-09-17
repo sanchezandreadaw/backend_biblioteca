@@ -386,7 +386,7 @@ public class UserService {
         libro.setUsuario(null);
         List<Libro> libros = usuario.getLibros();
         if (libros != null) {
-            libros = libros.stream().filter((libro_devolver) -> libro_devolver.getId() != libro.getId()).toList();
+            libros.removeIf(libro_devolver -> libro_devolver.getId().equals(libro.getId()));
             usuario.setLibros(libros);
             libro.setEstado_libro(EstadoLibro.SIN_PRESTAR);
             libro.setFecha_devolucion(null);

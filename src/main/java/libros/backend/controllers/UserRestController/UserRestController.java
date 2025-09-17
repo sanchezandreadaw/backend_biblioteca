@@ -312,11 +312,10 @@ public class UserRestController {
     @PutMapping("/devolver_libro")
     public ResponseEntity<?> devolverLibro(@RequestBody PedirDevolverLibro pedirDevolverLibro) {
         try {
-            Libro libro = libroService.findByTitulo(pedirDevolverLibro.getTitulo());
             userService.devolverLibro(pedirDevolverLibro.getTitulo(), pedirDevolverLibro.getId());
             return ResponseEntity
                     .status(HttpStatus.ACCEPTED)
-                    .body("El libro: " + libro.getTitulo() + " se ha devuelto correctamente");
+                    .body("El libro se ha devuelto correctamente");
         } catch (Exception exception) {
             return ResponseEntity
                     .status(HttpStatus.BAD_REQUEST)
