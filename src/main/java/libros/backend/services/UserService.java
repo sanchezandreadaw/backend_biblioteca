@@ -181,8 +181,8 @@ public class UserService {
         return usuario;
     }
 
-    public void actualizarClaveOlvidad(String DNI, String nuevaClave) throws DNINoEncontradoException, Exception {
-        User usuario = userRepository.findByDNI(DNI.trim().toLowerCase());
+    public void forgotPassword(String DNI, String nuevaClave) throws DNINoEncontradoException, Exception {
+        User usuario = userRepository.findByDNI(DNI.toLowerCase().trim());
         if (usuario == null) {
             throw new DNINoEncontradoException(DNI);
         }

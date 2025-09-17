@@ -3,6 +3,7 @@ package libros.backend.controllers.UserRestController;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -18,6 +19,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import libros.backend.dto.CambiarClave;
+import libros.backend.dto.ForgotPassword;
 import libros.backend.dto.LoginRequest;
 import libros.backend.dto.LoginResponse;
 import libros.backend.dto.MisLibrosReponse;
@@ -322,6 +324,24 @@ public class UserRestController {
                     .body(exception.getMessage());
         }
 
+    }
+
+    @PutMapping("/forgot_password")
+    public ResponseEntity<?> forgotPassword(@RequestBody ForgotPassword forgotPassword) {
+        try {
+            System.out.println("Entrando al método para cambiar la clave");
+            System.out.println(forgotPassword.getDNI());
+            userService.forgotPassword(forgotPassword.getDNI(), forgotPassword.getNuevaClave());
+            System.out.println("Clave cambiada correctamente");
+            return ResponseEntity
+                    .status(HttpStatus.ACCEPTED)
+                    .body(Map.of("mensaje", "clave actualizada correctamente"));
+        } catch (Exception exception) {
+            System.out.println("Error al cambiar la clave : " + exception.getMessage());
+            return ResponseEntity
+                    .status(HttpStatus.BAD_REQUEST)
+                    .body(exception.getMessage());
+        }
     }
 
 }
