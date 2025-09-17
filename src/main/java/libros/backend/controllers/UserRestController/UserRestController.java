@@ -329,15 +329,12 @@ public class UserRestController {
     @PutMapping("/forgot_password")
     public ResponseEntity<?> forgotPassword(@RequestBody ForgotPassword forgotPassword) {
         try {
-            System.out.println("Entrando al método para cambiar la clave");
             System.out.println(forgotPassword.getDNI());
             userService.forgotPassword(forgotPassword.getDNI(), forgotPassword.getNuevaClave());
-            System.out.println("Clave cambiada correctamente");
             return ResponseEntity
                     .status(HttpStatus.ACCEPTED)
                     .body(Map.of("mensaje", "clave actualizada correctamente"));
         } catch (Exception exception) {
-            System.out.println("Error al cambiar la clave : " + exception.getMessage());
             return ResponseEntity
                     .status(HttpStatus.BAD_REQUEST)
                     .body(exception.getMessage());
