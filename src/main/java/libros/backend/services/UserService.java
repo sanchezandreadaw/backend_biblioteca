@@ -112,8 +112,7 @@ public class UserService {
             List<Libro> libros, Long id) throws IdNoEncontradoException, Exception {
 
         try {
-            User user = userRepository.findById(id)
-                    .orElseThrow(() -> new IdNoEncontradoException(id));
+            User user = findById(id);
             UserHelper.isValidUser(nombre, apellidos, DNI, telefono, correo);
             UserHelper.verifyDNI(DNI, userRepository.findAll(), "yes");
             UserHelper.verifyEmail(correo, userRepository.findAll(), "yes");
@@ -132,8 +131,7 @@ public class UserService {
 
     public User cambiarClave(Long id_usuario, String nuevaClave) throws Exception, IdNoEncontradoException {
         try {
-            User usuario = userRepository.findById(id_usuario)
-                    .orElseThrow(() -> new IdNoEncontradoException(id_usuario));
+            User usuario = findById(id_usuario);
             UserHelper.isValidPassword(nuevaClave);
             usuario.setClave(passwordEncoder.encode(nuevaClave));
             userRepository.save(usuario);
@@ -161,8 +159,7 @@ public class UserService {
     }
 
     public User deleteUser(Long id) throws Exception, IdNoEncontradoException {
-        User usuario = userRepository.findById(id)
-                .orElseThrow(() -> new IdNoEncontradoException(id));
+        User usuario = findById(id);
 
         userRepository.delete(usuario);
         return usuario;
@@ -171,10 +168,8 @@ public class UserService {
 
     public User autenticarUsuario(String DNI, String clave)
             throws DNINoEncontradoException, ValoresIncorrectosException {
-        User usuario = userRepository.findByDNI(DNI.toLowerCase().trim());
-        if (usuario == null) {
-            throw new DNINoEncontradoException(DNI);
-        }
+        User usuario = findByDNI(DNI);
+
         if (!passwordEncoder.matches(clave, usuario.getClave())) {
             throw new ValoresIncorrectosException();
         }
@@ -182,19 +177,14 @@ public class UserService {
     }
 
     public void forgotPassword(String DNI, String nuevaClave) throws DNINoEncontradoException, Exception {
-        User usuario = userRepository.findByDNI(DNI.toLowerCase().trim());
-        if (usuario == null) {
-            throw new DNINoEncontradoException(DNI);
-        }
-
+        User usuario = findByDNI(DNI);
         UserHelper.isValidPassword(nuevaClave);
         usuario.setClave(passwordEncoder.encode(nuevaClave));
         userRepository.save(usuario);
     }
 
     public List<Libro> getLibrosUser(Long id) throws IdNoEncontradoException, Exception {
-        User usuario = userRepository.findById(id)
-                .orElseThrow(() -> new IdNoEncontradoException(id));
+        User usuario = findById(id);
 
         if (usuario.getLibros() == null) {
             throw new Exception("No existen libros para el usuario con id: " + id);
@@ -299,9 +289,8 @@ public class UserService {
         }
     }
 
-    public User penalizarUsuario(Long id) throws Exception {
-        User usuario = userRepository.findById(id)
-                .orElseThrow(() -> new Exception("El usuario con id: " + id + " no existe"));
+    public User penalizarUsuario(Long id) throws IdNoEncontradoException {
+        User usuario = findById(id);
 
         usuario.setEstado_usuario(EstadoUsuario.PENALIZADO);
         usuario.setFecha_fin_penalizacion(LocalDate.now().plusDays(20));
@@ -311,9 +300,7 @@ public class UserService {
     }
 
     public User despenalizarUsuario(Long id) throws IdNoEncontradoException {
-        User usuario = userRepository.findById(id)
-                .orElseThrow(() -> new IdNoEncontradoException(id));
-
+        User usuario = findById(id);
         usuario.setEstado_usuario(EstadoUsuario.SIN_PENALIZAR);
         usuario.setFecha_fin_penalizacion(null);
         userRepository.save(usuario);

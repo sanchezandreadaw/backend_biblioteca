@@ -80,8 +80,7 @@ public class LibroService {
     }
 
     public Libro delete(Long id) throws LibroNoEncontradoException {
-        Libro libro = libroRepository.findById(id)
-                .orElseThrow(() -> new LibroNoEncontradoException(id));
+        Libro libro = findById(id);
 
         libroRepository.delete(libro);
 
@@ -93,8 +92,7 @@ public class LibroService {
             LocalDate fecha_prestamo, LocalDate fecha_max_devolucion, LocalDate fecha_devolucion,
             EstadoLibro estadoLibro, User usuario, Long id_libro) throws Exception, LibroNoEncontradoException {
 
-        Libro libro = libroRepository.findById(id_libro)
-                .orElseThrow(() -> new LibroNoEncontradoException(id_libro));
+        Libro libro = findById(id_libro);
 
         try {
             LibroHelper.EsUnLibroValido(titulo, autor, fecha_publicacion);
